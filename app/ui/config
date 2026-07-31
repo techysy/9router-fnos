@@ -3,7 +3,7 @@
         "9router.Application": {
             "title": "9Router",
             "icon": "images/icon_{0}.png",
-            "type": "iframe",
+            "type": "url",
             "protocol": "http",
             "port": "20128",
             "url": "/",

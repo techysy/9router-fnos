@@ -52,7 +52,6 @@ fnpack build                              # 构建 fpk（NAS 上执行）
 
 - [9Router GitHub](https://github.com/decolua/9router) · [9Router 官网](https://9router.com)
 - [fnOS 开发者文档](https://developer.fnnas.com/docs/guide)
-- [Hermes fnOS 开发 Skill](https://github.com/techysy/yangyu-skills-hub)
 
 ## License
 

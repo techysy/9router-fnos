@@ -1,5 +1,10 @@
 # 9Router fnOS App
 
+[![GitHub release](https://img.shields.io/github/v/release/techysy/9router-fnos?label=Latest&color=blue)](https://github.com/techysy/9router-fnos/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/techysy/9router-fnos/blob/main/LICENSE)
+[![fnOS 1.1.31xx](https://img.shields.io/badge/fnOS-1.1.31xx+-orange.svg)](https://developer.fnnas.com/docs/guide)
+[![9Router v0.5.45](https://img.shields.io/badge/9Router-v0.5.45-cyan.svg)](https://github.com/decolua/9router)
+
 > 9Router — 免费 AI 路由器，连接 Claude Code / Codex / Cursor 等工具到 40+ 免费 AI 提供商。RTK 节省 20-40% token，自动 fallback 不中断。
 >
 > FREE AI Router & Token Saver. Connect Claude Code / Codex / Cursor to 40+ free AI providers. Save 20-40% tokens with RTK, auto-fallback never stops coding.

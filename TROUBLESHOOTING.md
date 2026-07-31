@@ -60,3 +60,36 @@ fnOS 重装 fpk 不会杀旧进程。手动清理:
 kill -9 $(pgrep -f '9router.*custom-server')
 ```
 然后在 App Center 重新启用。
+
+### 忘记 Dashboard 登录密码
+
+9Router 密码存储在 SQLite 数据库中（bcrypt 哈希），无法反解。
+
+**重置步骤：**
+
+```bash
+# 1. 在有 bcrypt 的机器上生成新哈希（如 Arch VM）
+pip install bcrypt
+python3 -c "import bcrypt; print(bcrypt.hashpw(b'你的新密码', bcrypt.gensalt(10)).decode())"
+# 输出类似: $2b$10$Fj6UBdxClNY0.3/U84SW3OHQbTTLMul3b...
+
+# 2. 将哈希写入 NAS 数据库
+ssh yangyu@192.168.31.101 'python3 -c "
+import sqlite3, json
+conn = sqlite3.connect(\"/vol4/@appdata/9router/db/data.sqlite\")
+cur = conn.cursor()
+row = cur.execute(\"SELECT data FROM settings WHERE id = 1\").fetchone()
+data = json.loads(row[0])
+data[\"password\"] = \"<粘贴上面生成的哈希>\"
+cur.execute(\"UPDATE settings SET data = ? WHERE id = 1\", (json.dumps(data),))
+conn.commit()
+conn.close()
+print(\"密码已重置\")
+"'
+
+# 3. 重启9Router 服务
+kill $(cat /vol4/@appdata/9router/9router.pid) 2>/dev/null
+cd /var/apps/9router && bash cmd/main start
+```
+
+重置后登录 Dashboard → Settings 修改为你自己的密码。

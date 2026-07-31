@@ -61,3 +61,15 @@ fnpack build                              # 构建 fpk（NAS 上执行）
 ## License
 
 MIT — 与 [decolua/9router](https://github.com/decolua/9router) 一致
+
+## 🔮 Future / 迭代计划
+
+等待 fnOS 开放 API 上游更新后再迭代：
+
+- **fnOS Open API** (≥1.2.0401)：通过 JS SDK 直接调用文件系统，减少 cmd/main 的 shell 依赖
+- **`trim.file.checkUserACL`**：后端权限检查（读/写/删除）
+- **`trim.file.convertPath`**：内部路径 → 用户可读路径
+- **统一网关接入**：复用 fnOS 域名和登录态
+- **页面交互 API**：获取平台配置、监听主题/语言变化
+
+> 📖 参考 [fnOS 开放 API 文档](https://developer.fnnas.com/docs/update-log/)

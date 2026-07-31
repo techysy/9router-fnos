@@ -1,0 +1,76 @@
+#!/bin/bash
+set -euo pipefail
+
+APP_NAME="${TRIM_APPNAME:-9router}"
+APP_DIR="${TRIM_APPDEST:-/var/apps/${APP_NAME}}"
+DATA_DIR="${TRIM_PKGVAR:-${APP_DIR}/var}"
+
+# 兼容两种部署布局：
+#   fnOS 传 TRIM_APPDEST=/vol4/@appcenter/9router → server 直接在 ${APP_DIR}/server
+#   旧版/部分版本 TRIM_APPDEST=/var/apps/9router    → server 在 ${APP_DIR}/target/server
+if [ -d "${APP_DIR}/server" ]; then
+    SRC_DIR="${APP_DIR}/server"
+elif [ -d "${APP_DIR}/target/server" ]; then
+    SRC_DIR="${APP_DIR}/target/server"
+else
+    echo "ERROR: server dir not found (tried ${APP_DIR}/server and ${APP_DIR}/target/server)" >&2
+    exit 1
+fi
+
+# Node.js 运行时（fnOS App Center nodejs_v24）
+NODE_BIN="/vol4/@appcenter/nodejs_v24/bin/node"
+[ -x "${NODE_BIN}" ] || NODE_BIN="$(command -v node || echo /usr/bin/node)"
+
+PORT="${TRIM_SERVICE_PORT:-20128}"
+HOSTNAME="0.0.0.0"
+LOG="${DATA_DIR}/9router.log"
+PID_FILE="${DATA_DIR}/9router.pid"
+
+start() {
+    mkdir -p "${DATA_DIR}"
+    if [ -f "${PID_FILE}" ] && kill -0 "$(cat "${PID_FILE}")" 2>/dev/null; then
+        echo "already running (pid $(cat "${PID_FILE}"))"
+        return 0
+    fi
+    cd "${SRC_DIR}"
+    DATA_DIR="${DATA_DIR}" PORT="${PORT}" HOSTNAME="${HOSTNAME}" \
+        nohup "${NODE_BIN}" --max-old-space-size=4096 custom-server.js >> "${LOG}" 2>&1 &
+    echo $! > "${PID_FILE}"
+    # 等待服务就绪（最多 60s）
+    for i in $(seq 1 60); do
+        if curl -sf "http://127.0.0.1:${PORT}/api/health" >/dev/null 2>&1; then
+            echo "started (pid $(cat "${PID_FILE}"))"
+            return 0
+        fi
+        sleep 1
+    done
+    echo "started, but health check timed out (check ${LOG})"
+    return 0
+}
+
+stop() {
+    if [ -f "${PID_FILE}" ]; then
+        kill "$(cat "${PID_FILE}")" 2>/dev/null || true
+        rm -f "${PID_FILE}"
+    fi
+    # 兜底：杀掉残留的 next-server 进程（仅限本应用目录）
+    pkill -f "${SRC_DIR}/custom-server.js" 2>/dev/null || true
+    echo "stopped"
+}
+
+status() {
+    if [ -f "${PID_FILE}" ] && kill -0 "$(cat "${PID_FILE}")" 2>/dev/null; then
+        echo "running"
+        return 0
+    fi
+    echo "stopped"
+    return 1
+}
+
+case "${1:-start}" in
+    start) start ;;
+    stop) stop ;;
+    status) status ;;
+    restart) stop; sleep 1; start ;;
+    *) echo "Usage: $0 {start|stop|status|restart}"; exit 1 ;;
+esac

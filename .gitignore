@@ -1,0 +1,4 @@
+app/server/
+*.fpk
+*.tar.gz
+.DS_Store

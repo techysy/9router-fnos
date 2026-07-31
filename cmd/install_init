@@ -1,0 +1,3 @@
+#!/bin/bash
+# 安装前置：所有文件已 bundle 在 app/ 中，无需额外操作
+exit 0

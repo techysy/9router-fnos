@@ -1,0 +1,4 @@
+#!/bin/bash
+# 安装后置：确保数据目录可写
+mkdir -p "${TRIM_PKGVAR:-/vol4/@appdata/9router}"
+exit 0

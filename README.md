@@ -58,10 +58,6 @@ fnpack build                              # 构建 fpk（NAS 上执行）
 - [9Router GitHub](https://github.com/decolua/9router) · [9Router 官网](https://9router.com)
 - [fnOS 开发者文档](https://developer.fnnas.com/docs/guide)
 
-## License
-
-MIT — 与 [decolua/9router](https://github.com/decolua/9router) 一致
-
 ## 🔮 Future / 迭代计划
 
 等待上游 [decolua/9router](https://github.com/decolua/9router) 发布新版本后重新打包：
@@ -71,3 +67,7 @@ MIT — 与 [decolua/9router](https://github.com/decolua/9router) 一致
 - RTK token 节省算法优化
 
 > 📖 上游项目：[decolua/9router](https://github.com/decolua/9router) · [9Router 官网](https://9router.com)
+
+## License
+
+MIT — 与 [decolua/9router](https://github.com/decolua/9router) 一致

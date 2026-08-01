@@ -2,6 +2,19 @@
 
 ---
 
+## v0.5.45-patch1 (2026-08-01)
+
+### 修复 / Fixes
+
+- 新增 Cloudflare 卡片"无连接"显示 bug 的补丁脚本 `scripts/patch-cloudflare-authmodes.sh`
+- Add patch script for the Cloudflare "No connections" grid-display bug
+- 根因：上游 `cloudflare-ai` 定义缺 `authModes:["apikey"]`（[issue #2969](https://github.com/decolua/9router/issues/2969)）
+- Root cause: upstream `cloudflare-ai` registry missing `authModes:["apikey"]`
+- 升级 9Router 重新打包后需重新运行脚本（构建产物补丁会丢失）
+- Re-run the script after repackaging/upgrading 9Router (build-artifact patch is lost on rebuild)
+
+---
+
 ## v0.5.45 (2026-07-31)
 
 ### 初始版本 / Initial Release

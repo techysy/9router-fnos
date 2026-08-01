@@ -45,6 +45,24 @@ fnpack build                              # 构建 fpk（NAS 上执行）
 - **MITM 高级功能**需要 root（DNS 重写、根证书安装），fnOS 以 `package` 用户运行，这部分受限
 - MITM features need root — fnOS apps run as `package` user; core features (routing, RTK, quota tracking) unaffected
 
+## 已知问题与修复 / Known Issues & Fixes
+
+### 🐛 Cloudflare 卡片显示"无连接" / Cloudflare card shows "No connections"
+
+**问题 / Symptom**: 提供商列表页的 **Cloudflare** 卡片即使连接已添加且活跃，仍显示"无连接"（详情页正常）。其他免费提供商（如 NVIDIA）正常。
+
+**根因 / Root cause**: 上游 `cloudflare-ai` provider 目录定义缺少 `authModes:["apikey"]`，导致网格页 `dualAuthTypes()` 只按 `oauth` 过滤，`apikey` 类型的连接被排除在计数外。属上游 bug，已提 [issue #2969](https://github.com/decolua/9router/issues/2969)。
+
+**修复 / Fix**: 在 NAS 上运行补丁脚本：
+
+```bash
+bash scripts/patch-cloudflare-authmodes.sh
+```
+
+然后浏览器硬刷新 9Router 页面（`Ctrl+Shift+R`）。脚本会给客户端/服务器 bundle 里的 `cloudflare-ai` 定义补上 `authModes:["apikey"]`，并自动备份原文件（`.bak.<timestamp>`）。
+
+> ⚠️ **升级后需重新打补丁**: 该补丁改的是构建产物（bundle），升级 9Router 重新打包后会丢失，需重新运行脚本。脚本会自动定位新 chunk，无需手动改路径。
+
 ## 踩坑记录 / Pitfalls
 
 - `cp -r app/*` 漏掉 `.next-cli-build` 隐藏目录 → 服务启动报 "Could not find a production build"

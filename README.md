@@ -44,6 +44,11 @@ fnpack build                              # 构建 fpk（NAS 上执行）
 
 - **MITM 高级功能**需要 root（DNS 重写、根证书安装），fnOS 以 `package` 用户运行，这部分受限
 - MITM features need root — fnOS apps run as `package` user; core features (routing, RTK, quota tracking) unaffected
+- **📱 飞牛移动 App 容器限制 / fnOS mobile App container limitations**：
+  - 飞牛移动 App（iOS/Android 客户端）用 **WebView iframe** 打开所有应用（无论 url/iframe 版），9Router 的登录 cookie（`SameSite=lax`）在该容器无法保存 → **容器内无法登录**（反复跳回登录页）。电脑端/手机浏览器直接访问 `http://<NAS>:20128` 则正常。
+  - 本应用已**关闭登录（`requireLogin=false`）**以适配移动容器（内网自用，API 调用仍受 `requireApiKey` 保护）。如需恢复，将 9Router 数据库 `settings` 的 `requireLogin` 改回 `true`。
+  - 移动 App 容器对 `localStorage` / JS 驱动的 UI 状态持久化有限，**主题切换、货币补丁（¥）在容器内可能不生效**——用手机浏览器直接访问 9Router 即为完整体验。
+  - fnOS mobile App opens every app via its own WebView iframe, so SameSite-lax login cookies don't persist in the container (can't log in there). We disabled login (`requireLogin=false`) to accommodate it (internal use; API calls still key-guarded). Theme/currency patches may not visibly apply in the mobile container — use a mobile browser for full experience.
 
 ## 已知问题与修复 / Known Issues & Fixes
 

@@ -74,6 +74,8 @@ bash scripts/patch-cloudflare-authmodes.sh
 ## 相关链接 / Links
 
 - [9Router GitHub](https://github.com/decolua/9router) · [9Router 官网](https://9router.com)
+- [Hermes WebUI](https://github.com/techysy/hermes-webui-fnos) — Hermes 相关 fnOS 应用（WebUI 浏览器访问）
+- [MetaCubeXD](https://github.com/techysy/metacubexd-fnos) — Hermes 相关 fnOS 应用（Mihomo 网络代理面板）
 - [fnOS 开发者文档](https://developer.fnnas.com/docs/guide)
 
 ## 🔮 Future / 迭代计划

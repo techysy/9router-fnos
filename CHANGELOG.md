@@ -2,7 +2,14 @@
 
 ---
 
-## v0.5.45-patch2 (2026-08-01)
+## v0.5.45.01 (2026-08-01)
+
+### 更新 / Update
+
+- 打包版本号升至 `0.5.45.01`（记录打包次数，同时触发 App Center 图标刷新）
+- Packaging version bumped to `0.5.45.01` (tracks package count; also forces App Center icon refresh)
+- 重打 url + iframe 两个 fpk
+- Rebuilt both url + iframe fpk variants
 
 ### 更新 / Update
 

@@ -2,6 +2,36 @@
 
 ---
 
+## Cloudflare 卡片显示"无连接"（即使连接已添加且活跃）
+
+**症状**: 提供商列表页的 Cloudflare 卡片显示"无连接"，但详情页连接状态是"活跃"，且 `cf/@cf/...` 模型能正常路由。
+
+**原因**: 上游 `cloudflare-ai` provider 目录定义缺少 `authModes:["apikey"]`，网格页 `dualAuthTypes()` 只按 `oauth` 过滤，把 `apikey` 连接排除在计数外。属上游 bug（[issue #2969](https://github.com/decolua/9router/issues/2969)）。
+
+**修复**:
+```bash
+bash scripts/patch-cloudflare-authmodes.sh   # 在 NAS 上运行
+```
+
+**修复后仍显示"无连接" → 浏览器缓存问题**:
+
+补丁改的 bundle 文件名带 hash（如 `1321-3cb00d56de5fba92.js`），**hash 没变**，Next.js 发 `Cache-Control: immutable`，浏览器一直用缓存的旧 JS。此时**重启服务（停用/启用）或卸载重装都无效**——文件名 hash 不变，浏览器缓存照样命中旧的。唯一有效做法是**清浏览器缓存**:
+
+- **强刷**: 在 9Router 标签页上 `Ctrl+Shift+R`（或 F12 → 右键刷新按钮 → 「清空缓存并硬性重新加载」）
+- **清缓存**: `Ctrl+Shift+Delete` → 「缓存的图片和文件」→ 时间范围选「所有时间」→ 清除，再重开
+- **最稳验证**: 用**无痕窗口**打开 9Router（无痕默认不读缓存）
+
+**验证服务器已生效**（无需登录）:
+```bash
+curl -s "http://127.0.0.1:20128/_next/static/chunks/1321-3cb00d56de5fba92.js" \
+  | grep -o "cloudflare-ai.*authModes:\[.\{0,10\}" | head -1
+# 应输出含 authModes:["apikey"]
+```
+
+> ⚠️ 该补丁改的是构建产物（bundle），**升级 9Router 重新打包后会丢失**，需重新运行 `scripts/patch-cloudflare-authmodes.sh`。脚本会自动定位新 chunk，无需手动改路径。
+
+---
+
 ## 无法启用 / 本地应用启动失败
 
 **日志**: `/var/log/apps/9router.log` 显示 `cd: .../target/server: No such file or directory`

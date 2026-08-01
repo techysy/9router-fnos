@@ -2,6 +2,25 @@
 
 ---
 
+## v0.5.45 (2026-08-01)
+
+### 更新 / Update
+
+- 版本号回归官方 `0.5.45`（不再用 .01 后缀）
+- Version back to official `0.5.45` (dropped the .01 packaging suffix)
+- 🎨 应用图标更新为官方 9Router hub logo（中心 1 大 + 外围 5 小空心圆环，对角橙色渐变）
+- Updated app icon to official 9Router hub logo (1 center + 5 outer hollow rings, diagonal orange gradient)
+- 💰 成本显示按界面语言切换货币：中文界面显示 ¥（乘 7.2 汇率），英文显示 $（预估成本、概览卡片、图表、Cost/call）
+- Cost display switches currency by UI language: Chinese shows ¥ (×7.2), English shows $ (Est. Cost, overview, chart, Cost/call)
+- 📦 打包位置改为 `/vol1/1000/fnOS App/`
+- Build output moved to `/vol1/1000/fnOS App/`
+
+### 修复 / Fixes
+
+- 附带 Cloudflare 卡片"无连接"补丁脚本 `scripts/patch-cloudflare-authmodes.sh`
+
+---
+
 ## v0.5.45.01 (2026-08-01)
 
 ### 更新 / Update

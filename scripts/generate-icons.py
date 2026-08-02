@@ -23,7 +23,9 @@ def make_gradient_bg(w, h, c1, c2, radius):
 
 def make_icon(size):
     c1, c2 = (0xE5,0x6A,0x4A), (0xa6,0x40,0x27)
-    icon = make_gradient_bg(size, size, c1, c2, int(size*0.24))
+    # 官方 fnOS 圆角标准: 圆角 = 边长 × 18.75% (256px → 48px)
+    radius = max(2, int(size * 0.1875))
+    icon = make_gradient_bg(size, size, c1, c2, radius)
     d = ImageDraw.Draw(icon)
     cx = cy = size / 2
     # 中心大圆环 与 外围小圆环 的半径

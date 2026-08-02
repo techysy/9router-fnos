@@ -13,6 +13,10 @@
 
 Packages [decolua/9router](https://github.com/decolua/9router) as a fnOS desktop window app — Dashboard opens in an iframe on the fnOS desktop.
 
+## 作者 / Author
+
+洋芋 (YangYu) · 🐂 [fnOS 应用系列](https://github.com/stars/techysy/lists/fnos-app) · [GitHub](https://github.com/techysy)
+
 ---
 
 ## 快速开始 / Quick Start

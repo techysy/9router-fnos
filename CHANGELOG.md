@@ -2,6 +2,14 @@
 
 ---
 
+## v0.5.45+ (2026-08-02)
+
+### 修复 / Fixes
+
+- 🔧 **freeTier 提供商连接状态补丁**：新增 `scripts/fix-freetier-authmodes.py`，自动修复所有 `category:"freeTier"` 但缺 `authModes:["apikey"]` 的提供商（Cloudflare、BytePlus、Ollama、Vertex 等），解决提供商列表页连接状态显示异常。排除 `authType:"none"`（TTS/搜索/本地）和纯 OAuth 提供商，幂等可重复运行。
+
+---
+
 ## v0.5.45 (2026-08-01)
 
 ### 更新 / Update

@@ -3,7 +3,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/techysy/9router-fnos?label=Latest&color=blue)](https://github.com/techysy/9router-fnos/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/techysy/9router-fnos/blob/main/LICENSE)
 [![fnOS 1.1.31xx](https://img.shields.io/badge/fnOS-1.1.31xx+-orange.svg)](https://developer.fnnas.com/docs/guide)
-[![9Router v0.5.45](https://img.shields.io/badge/9Router-v0.5.45-cyan.svg)](https://github.com/decolua/9router)
+[![9Router](https://img.shields.io/github/v/release/decolua/9router?label=9Router&color=cyan)](https://github.com/decolua/9router)
 
 > 9Router — FREE AI Router & Token Saver for 飞牛 NAS (fnOS). Connect Claude Code / Codex / Cursor to 40+ free AI providers. Save 20-40% tokens with RTK, auto-fallback never stops coding.
 

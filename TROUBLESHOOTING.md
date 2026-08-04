@@ -123,3 +123,38 @@ cd /var/apps/9router && bash cmd/main start
 ```
 
 重置后登录 Dashboard → Settings 修改为你自己的密码。
+
+---
+
+## 货币补丁（¥）不生效
+
+**症状**: Pricing 页面仍显示 `$`，或飞牛移动 App 容器内显示不对。
+
+**原因**: 货币补丁分两层，分别处理：
+
+| 位置 | 内容 | 说明 |
+|---|---|---|
+| i18n `zh-CN.json` | Pricing 页文字 `美元/百万 Token` → `¥/百万 Token` | 已集成进 `scripts/prepare-server.sh` 自动应用 |
+| 前端 JS bundle | Usage 页 `~$0.95` 的符号 | 是 JS 硬编码，需额外 JS 补丁 |
+
+**排查**:
+```bash
+# 1. 确认 i18n 补丁已应用（应显示 ¥）
+grep '百万 Token' /vol4/@appcenter/9router/server/public/i18n/literals/zh-CN.json
+
+# 2. 确认中文 locale（右上角语言切到中文 🇨🇳）
+# 3. 强刷浏览器缓存（补丁改 bundle 后缓存可能命中旧的）
+```
+
+> ⚠️ 补丁在每次 `prepare-server.sh` 构建时自动应用，但**升级 9Router 重新打包后会覆盖**，需重新构建。
+
+## 飞牛移动 App 容器内无法登录 / 货币补丁不生效
+
+**症状**: 在飞牛移动 App（iOS/Android）打开 9Router，反复跳回登录页，或货币补丁/主题切换不生效。
+
+**原因**: 飞牛移动 App 用 **WebView iframe** 打开所有应用：
+
+- 登录 cookie（`SameSite=lax`）无法在容器内保存 → 反复跳登录页
+- `localStorage` / JS 驱动的 UI 状态持久化受限 → 主题、货币补丁可能不生效
+
+**解决**: 本应用已**关闭登录**（`requireLogin=false`）规避容器登录问题（内网自用，API 调用仍受 `requireApiKey` 保护）。如需完整体验，用电脑浏览器或手机浏览器直接访问 `http://<NAS-IP>:20128`。

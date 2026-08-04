@@ -21,6 +21,16 @@ mkdir -p "../../app/server"
 # 复制文件（包含隐藏目录如 .next-cli-build）
 cp -r package/app/. ../../app/server/
 
+# ── 货币补丁：zh-CN.json 定价显示从 USD($) 改为 ¥ ──
+VI18N="../../app/server/public/i18n/literals/zh-CN.json"
+if [ -f "$VI18N" ]; then
+    sed -i \
+        -e 's/"美元 \/ 百万 Token"/"¥ \/ 百万 Token"/g' \
+        -e 's/（\$\/100 万 Token）。示例：输入费率 2.50 表示每 1,000,000 个输入 Token 需 2.50 美元。/（¥\/百万 Token）。示例：输入费率 2.50 表示每 1,000,000 个输入 Token 需 ¥2.50。/g' \
+        "$VI18N"
+    echo "✅ 货币补丁已应用: ¥ 替代 $"
+fi
+
 # 补全 Dockerfile 里额外 COPY 的依赖（standalone tracing 可能遗漏）
 for dep in node-forge; do
     if [ ! -d "../../app/server/node_modules/$dep" ]; then

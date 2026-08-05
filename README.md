@@ -65,7 +65,7 @@ Dashboard 里配置 AI 提供商（如 Kiro AI 免费模型）后即可使用。
 
 | 增强 | 说明 |
 |---|---|
-| **货币 ¥ 补丁** | Pricing 定价页面从 `$` 改为 `¥` 显示 |
+| **货币补丁** | 成本/定价按界面语言显示本地货币：中文 ¥、台湾 NT$、韩国 ₩、日本 ¥、越南 ₫（`scripts/patch_currency.py`） |
 | **Cloudflare 修复** | 修复 Cloudflare 卡片误显示"无连接" |
 
 这些补丁在每次构建时自动应用（`scripts/prepare-server.sh` 集成）。
@@ -80,7 +80,7 @@ cd 9router-fnos
 
 # 提取 9Router standalone + 自动应用增强补丁
 # 需在 PATH 中加入 fnOS 的 node：export PATH=/vol4/@appcenter/nodejs_v24/bin:$PATH
-bash scripts/prepare-server.sh 0.5.45
+bash scripts/prepare-server.sh 0.5.50
 
 # 构建 fpk（需在飞牛 NAS 上执行）
 fnpack build

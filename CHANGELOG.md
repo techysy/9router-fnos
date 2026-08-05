@@ -2,6 +2,22 @@
 
 ---
 
+## v0.5.50.2 (2026-08-05)
+
+### 更新 / Update
+
+- **多币种货币补丁**：成本显示按界面语言切换本地货币
+- **Multi-currency patch**: cost display switches by UI locale
+  - 中文 `zh-CN` → ¥ CNY（×7.2）
+  - 台湾 `zh-TW` → NT$ TWD（×31.5）
+  - 日本 `ja` → ¥ JPY（×155）
+  - 韩国 `ko` → ₩ KRW（×1350）
+  - 越南 `vi` → ₫ VND（×25000）
+  - 其他 → $ USD
+- 更新 `scripts/patch_currency.py` 支持多币种
+
+---
+
 ## v0.5.50.1 (2026-08-05)
 
 ### 更新 / Update

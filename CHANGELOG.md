@@ -2,6 +2,21 @@
 
 ---
 
+## v0.5.50.3 (2026-08-05)
+
+### 新增 / Added
+
+- **缓存 Token 预估统计**：概览页新增「缓存 TOKEN」「缓存命中率」卡片，按模型表格展示缓存列；上游返回真实缓存值时标记真实值，未返回时基于该模型历史命中率估算并标记 `(含预估)`（仅供参考，不计费）
+- **Cached-token estimate stats**: overview shows Cached Tokens + Cache Hit Rate; per-model table adds cache column; estimates marked (含预估)
+- **货币全局开关**：语言切换旁新增 💱 地区货币开关（默认开启；关闭后成本统一显示 `$`）
+- **Regional-currency toggle**: header 💱 switch beside language; off → `$` everywhere
+
+### 变更 / Changed
+
+- `patch_currency.py` 改为正则自适应（支持混淆后 `$${a.toFixed(t)}` 模板，升级不再失效）
+
+---
+
 ## v0.5.50.2 (2026-08-05)
 
 ### 更新 / Update

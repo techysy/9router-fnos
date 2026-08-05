@@ -2,6 +2,17 @@
 
 ---
 
+## v0.5.50 (2026-08-05)
+
+### 更新 / Update
+
+- 同步上游 `decolua/9router` v0.5.50
+- Synced upstream `decolua/9router` v0.5.50
+- 沿用货币补丁（zh-CN 显示 ¥）、freeTier authModes 补丁、node-forge 补装
+- Retains currency patch (¥ in zh-CN), freeTier authModes patch, node-forge reinstall
+
+---
+
 ## v0.5.45+ (2026-08-02)
 
 ### 修复 / Fixes

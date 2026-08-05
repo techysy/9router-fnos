@@ -1,5 +1,5 @@
 appname               = 9router
-version               = 0.5.50.3
+version               = 0.5.50.4
 display_name          = 9Router
 desc                  = FREE AI Router & Token Saver - AI 编码路由器，连接 Claude Code/Codex/Cursor 等工具到 40+ 免费 AI 提供商
 arch                  = x86_64

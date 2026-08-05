@@ -2,6 +2,22 @@
 
 ---
 
+## v0.5.50.4 (2026-08-05)
+
+### 修复 / Fixes
+
+- **缓存 Token 统计不生效（始终为 0）** — 根因：上游返回的缓存字段名是 `cached_tokens`/`cache_read_input_tokens`（非 `cached_prompt_tokens`），`recordCacheTokenStats` 读取不到真实缓存。已兼容所有缓存字段名
+- **Cached-token stats showing 0** — accept `cached_tokens` / `cache_read_input_tokens` field variants
+- **货币开关移到 Profile** — 从右上角头部移到 Profile > Language 卡片下（Select Language 下方）
+- **Regional-currency toggle moved to Profile > Language**
+- **缓存卡片 i18n** — 新增「Cache Hit Rate」翻译键；「(含预估)」标记独立避免破坏 i18n 整键匹配
+
+### 变更 / Changed
+
+- 本版为 **iframe 版本**（桌面窗口内嵌，`app/ui/config` type=iframe）
+
+---
+
 ## v0.5.50.3 (2026-08-05)
 
 ### 新增 / Added

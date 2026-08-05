@@ -2,6 +2,17 @@
 
 ---
 
+## v0.5.50.1 (2026-08-05)
+
+### 更新 / Update
+
+- **货币补丁版**：单独打一个补丁，修复升级 0.5.50 后成本显示仍为美元 `$` 的问题
+- **Currency patch**: dedicated patch so cost displays ¥ (×7.2) in zh-CN UI after the 0.5.50 upgrade
+- 根因：0.5.50 重新构建后 bundle chunk hash 变了，运行时 `__c$` 货币补丁丢失，成本仍硬编码 `$`
+- 新增 `scripts/patch_currency.py`（可复用，幂等，自动备份），烘焙进 fpk
+
+---
+
 ## v0.5.50 (2026-08-05)
 
 ### 更新 / Update

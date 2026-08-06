@@ -2,6 +2,20 @@
 
 ---
 
+## v0.5.50.5 (2026-08-06)
+
+### 修复 / Fixes
+
+- **移除预估缓存算法** — 命中率估算不可靠、无法生效，已移除。只记录上游返回的**真实缓存值**，未返回则不记录（不做预估）
+- **Dropped estimate algorithm** — only record real upstream cached values
+- **移除 bundle 货币补丁** — 源码已实现货币功能（`currency.js` + profile 开关），不再重复打 bundle 补丁；修复「货币开关不生效」（之前 bundle 补丁覆盖了源码开关逻辑）
+
+### 变更 / Changed
+
+- **iframe 版本**（`app/ui/config` type=iframe）
+
+---
+
 ## v0.5.50.4 (2026-08-05)
 
 ### 修复 / Fixes

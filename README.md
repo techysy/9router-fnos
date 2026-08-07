@@ -3,7 +3,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/techysy/9router-fnos?label=Latest&color=blue)](https://github.com/techysy/9router-fnos/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/techysy/9router-fnos/blob/main/LICENSE)
 [![fnOS 1.1.31xx](https://img.shields.io/badge/fnOS-1.1.31xx+-orange.svg)](https://developer.fnnas.com/docs/guide)
-[![9Router](https://img.shields.io/github/v/release/decolua/9router?label=9Router&color=cyan)](https://github.com/decolua/9router)
+[![9Router](https://img.shields.io/github/v/tag/decolua/9router?label=9Router&color=cyan)](https://github.com/decolua/9router)
 
 > 9Router 免费 AI 路由器的飞牛 NAS (fnOS) 应用包。连接 Claude Code / Codex / Cursor 等工具到 40+ 免费 AI 提供商，RTK 节省 20-40% token，自动 fallback 不中断。
 
@@ -18,7 +18,9 @@
 - **一个端点连所有 AI**：Claude Code、Codex、Cursor、Cline 等工具指向 `http://<NAS-IP>:20128/v1` 即接入 40+ 免费提供商
 - **自动 fallback**：某个提供商限流/故障时自动切换，不中断编码
 - **RTK Token 节省**：减少 20-40% token 消耗
-- **中文定价显示**：内置货币补丁，Pricing 页面以 ¥ 显示（见下方"本项目增强"）
+- **多币种成本显示**：成本/定价按界面语言显示本地货币（¥/NT$/¥/₩/₫），可在 Profile 开关切换
+- **配额包按连接独立**：同一提供商配多个连接时，各连接的配额包（如 Bonus Pack）独立显示与隐藏
+- **免费供应商可开关**：noAuth 免费供应商（opencode、MiMo）可在 Provider 页控制是否显示在「使用情况画布」
 
 ## 🚀 快速安装
 
@@ -61,27 +63,31 @@ Dashboard 里配置 AI 提供商（如 Kiro AI 免费模型）后即可使用。
 
 ## 🔧 本项目增强
 
-相比上游 [decolua/9router](https://github.com/decolua/9router)，本包额外提供：
+相比上游 [decolua/9router](https://github.com/decolua/9router)，本包基于源码额外提供（均已提上游 PR）：
 
-| 增强 | 说明 |
-|---|---|
-| **货币补丁** | 成本/定价按界面语言显示本地货币：中文 ¥、台湾 NT$、韩国 ₩、日本 ¥、越南 ₫（`scripts/patch_currency.py`） |
-| **Cloudflare 修复** | 修复 Cloudflare 卡片误显示"无连接" |
+| 增强 | 说明 | 上游 PR |
+|---|---|---|
+| **多币种成本显示** | 成本/定价按界面语言显示本地货币：中文 ¥、台湾 NT$、日本 ¥、韩国 ₩、越南 ₫，Profile 开关切换 | [#3118](https://github.com/decolua/9router/pull/3118) |
+| **配额包按连接独立** | 同一提供商（如 CodeBuddy CN）配多个连接时，各连接的配额包独立显示/隐藏 | [#3122](https://github.com/decolua/9router/pull/3122) |
+| **免费供应商拓扑开关** | noAuth 免费供应商（opencode、MiMo）可在 Provider 页开关是否显示在「使用情况画布」 | [#3123](https://github.com/decolua/9router/pull/3123) |
+| **Cloudflare 修复** | 修复 Cloudflare 卡片误显示"无连接" | — |
 
-这些补丁在每次构建时自动应用（`scripts/prepare-server.sh` 集成）。
+这些增强从源码编译进包（`NEXT_DIST_DIR=.next-cli-build npm run build`），构建流程见下方「从源码构建」。
 
 ## 🛠️ 从源码构建
 
-> 面向开发者。普通用户直接用 Release 即可。
+> 面向开发者。普通用户直接用 Release 即可。本包基于源码构建（含货币/配额/拓扑增强），而非从 npm 包提取。
 
 ```bash
 git clone https://github.com/techysy/9router-fnos.git
-cd 9router-fnos
+# 需要 9Router 源码（含增强补丁分支）：
+git clone https://github.com/techysy/9router.git 9router-src
 
-# 提取 9Router standalone + 自动应用增强补丁
-# 需在 PATH 中加入 fnOS 的 node：export PATH=/vol4/@appcenter/nodejs_v24/bin:$PATH
-bash scripts/prepare-server.sh 0.5.50
+cd 9router-src
+npm install
+NEXT_DIST_DIR=.next-cli-build npm run build   # 生成 standalone
 
+# 组装 app/server（把 .next-cli-build/standalone 内容 + custom-server.js 放入 9router-fnos/app/server）
 # 构建 fpk（需在飞牛 NAS 上执行）
 fnpack build
 ```

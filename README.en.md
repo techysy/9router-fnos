@@ -3,7 +3,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/techysy/9router-fnos?label=Latest&color=blue)](https://github.com/techysy/9router-fnos/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/techysy/9router-fnos/blob/main/LICENSE)
 [![fnOS 1.1.31xx](https://img.shields.io/badge/fnOS-1.1.31xx+-orange.svg)](https://developer.fnnas.com/docs/guide)
-[![9Router](https://img.shields.io/github/v/release/decolua/9router?label=9Router&color=cyan)](https://github.com/decolua/9router)
+[![9Router](https://img.shields.io/github/v/tag/decolua/9router?label=9Router&color=cyan)](https://github.com/decolua/9router)
 
 > 9Router — FREE AI Router & Token Saver for 飞牛 NAS (fnOS). Connect Claude Code / Codex / Cursor to 40+ free AI providers. Save 20-40% tokens with RTK, auto-fallback never stops coding.
 
@@ -18,7 +18,9 @@ Packages [decolua/9router](https://github.com/decolua/9router) as a fnOS desktop
 - **One endpoint for all AI**: Point Claude Code, Codex, Cursor, Cline to `http://<NAS-IP>:20128/v1` to reach 40+ free AI providers
 - **Auto-fallback**: Switch providers on rate-limit/failure without interrupting coding
 - **RTK Token Saver**: Save 20-40% tokens
-- **RMB pricing**: Built-in currency patch shows ¥ on the Pricing page (see "Enhancements" below)
+- **Multi-currency cost**: Cost/pricing shows local currency by UI locale (¥/NT$/¥/₩/₫), toggle in Profile
+- **Per-connection quota rows**: With multiple connections of the same provider, each connection's quota packs (e.g. Bonus Pack) are shown/hidden independently
+- **Toggleable free providers**: noAuth free providers (opencode, MiMo) can be shown/hidden on the Usage topology canvas from the Providers page
 
 ## 🚀 Quick Install
 
@@ -61,27 +63,31 @@ The fnOS mobile app (iOS/Android) opens every app in its own WebView iframe, wit
 
 ## 🔧 Enhancements vs Upstream
 
-Compared to upstream [decolua/9router](https://github.com/decolua/9router), this package adds:
+Compared to upstream [decolua/9router](https://github.com/decolua/9router), this package adds (all with upstream PRs):
 
-| Enhancement | Description |
-|---|---|
-| **RMB (¥) pricing patch** | Pricing page shows ¥ instead of $ |
-| **Cloudflare fix** | Fixes Cloudflare card wrongly showing "No connections" |
+| Enhancement | Description | Upstream PR |
+|---|---|---|
+| **Multi-currency cost** | Cost/pricing shows local currency by UI locale: zh ¥, zh-TW NT$, ja ¥, ko ₩, vi ₫, Profile toggle | [#3118](https://github.com/decolua/9router/pull/3118) |
+| **Per-connection quota rows** | Same provider with multiple connections: each connection's quota packs shown/hidden independently | [#3122](https://github.com/decolua/9router/pull/3122) |
+| **Free-provider topology toggle** | noAuth free providers (opencode, MiMo) show/hide on the Usage topology canvas from the Providers page | [#3123](https://github.com/decolua/9router/pull/3123) |
+| **Cloudflare fix** | Fixes Cloudflare card wrongly showing "No connections" | — |
 
-These patches are applied automatically on each build (integrated into `scripts/prepare-server.sh`).
+These enhancements are compiled into the package from source (`NEXT_DIST_DIR=.next-cli-build npm run build`); see "Build from Source" below.
 
 ## 🛠️ Build from Source
 
-> For developers. Most users should use the Release.
+> For developers. Most users should use the Release. This package is built from source (with the currency/quota/topology enhancements), not extracted from the npm package.
 
 ```bash
 git clone https://github.com/techysy/9router-fnos.git
-cd 9router-fnos
+# Need the 9Router source (with the enhancement branches):
+git clone https://github.com/techysy/9router.git 9router-src
 
-# Extract 9Router standalone + apply enhancement patches
-# Add fnOS node to PATH first: export PATH=/vol4/@appcenter/nodejs_v24/bin:$PATH
-bash scripts/prepare-server.sh 0.5.45
+cd 9router-src
+npm install
+NEXT_DIST_DIR=.next-cli-build npm run build   # produces the standalone
 
+# Assemble app/server (copy .next-cli-build/standalone contents + custom-server.js into 9router-fnos/app/server)
 # Build the fpk (must run on the fnOS NAS)
 fnpack build
 ```

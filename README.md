@@ -70,7 +70,7 @@ Dashboard 里配置 AI 提供商（如 Kiro AI 免费模型）后即可使用。
 | **多币种成本显示** | 成本/定价按界面语言显示本地货币：中文 ¥、台湾 NT$、日本 ¥、韩国 ₩、越南 ₫，Profile 开关切换 | [#3118](https://github.com/decolua/9router/pull/3118) |
 | **配额包按连接独立** | 同一提供商（如 CodeBuddy CN）配多个连接时，各连接的配额包独立显示/隐藏 | [#3122](https://github.com/decolua/9router/pull/3122) |
 | **免费供应商拓扑开关** | noAuth 免费供应商（opencode、MiMo）可在 Provider 页开关是否显示在「使用情况画布」 | [#3123](https://github.com/decolua/9router/pull/3123) |
-| **Cloudflare 修复** | 修复 Cloudflare 卡片误显示"无连接" | — |
+| **Cloudflare 修复** | 修复 Cloudflare 卡片误显示"无连接"（已随上游 v0.5.50 包含） | [#2993](https://github.com/decolua/9router/pull/2993) |
 
 这些增强从源码编译进包（`NEXT_DIST_DIR=.next-cli-build npm run build`），构建流程见下方「从源码构建」。
 

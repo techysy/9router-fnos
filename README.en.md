@@ -70,7 +70,7 @@ Compared to upstream [decolua/9router](https://github.com/decolua/9router), this
 | **Multi-currency cost** | Cost/pricing shows local currency by UI locale: zh ¥, zh-TW NT$, ja ¥, ko ₩, vi ₫, Profile toggle | [#3118](https://github.com/decolua/9router/pull/3118) |
 | **Per-connection quota rows** | Same provider with multiple connections: each connection's quota packs shown/hidden independently | [#3122](https://github.com/decolua/9router/pull/3122) |
 | **Free-provider topology toggle** | noAuth free providers (opencode, MiMo) show/hide on the Usage topology canvas from the Providers page | [#3123](https://github.com/decolua/9router/pull/3123) |
-| **Cloudflare fix** | Fixes Cloudflare card wrongly showing "No connections" | — |
+| **Cloudflare fix** | Fixes Cloudflare card wrongly showing "No connections" (already in upstream v0.5.50) | [#2993](https://github.com/decolua/9router/pull/2993) |
 
 These enhancements are compiled into the package from source (`NEXT_DIST_DIR=.next-cli-build npm run build`); see "Build from Source" below.
 

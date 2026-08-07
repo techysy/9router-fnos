@@ -2,6 +2,24 @@
 
 ---
 
+## v0.5.50.6 (2026-08-08)
+
+### 新增 / Added
+
+- **配额行按连接隔离** — 同一提供商（如 CodeBuddy CN）配置多个连接时，隐藏某连接的配额包（如 Bonus Pack 1）不再影响其它连接的同类配额包。`quotaVisibility` 改为按连接 id 存储，兼容旧版 provider-key 设置
+- **Per-connection quota row visibility** — hiding a bonus/refill pack on one account no longer hides it on another account of the same provider
+
+### 修复 / Fixes
+
+- **免费供应商拓扑图开关** — noAuth 免费供应商（opencode、MiMo Code Free）现可在 Provider 页通过开关控制是否显示在「使用情况画布」（拓扑图）；MiMo 免费通道已终止，默认不显示，可手动开启
+- **Free-provider topology toggle** — noAuth free providers get a show/hide toggle for the usage topology canvas; MiMo free (service ended) is hidden by default but re-toggleable
+
+### 变更 / Changed
+
+- 版本号 `0.5.50.6`（源码级：货币 PR #3118 + 配额/拓扑补丁）
+
+---
+
 ## v0.5.50.5 (2026-08-06)
 
 ### 修复 / Fixes

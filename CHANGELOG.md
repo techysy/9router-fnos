@@ -2,21 +2,26 @@
 
 ---
 
-## v0.5.50.6 (2026-08-08)
+## v0.5.51 (2026-08-08)
 
 ### 新增 / Added
 
-- **配额行按连接隔离** — 同一提供商（如 CodeBuddy CN）配置多个连接时，隐藏某连接的配额包（如 Bonus Pack 1）不再影响其它连接的同类配额包。`quotaVisibility` 改为按连接 id 存储，兼容旧版 provider-key 设置
+- **配额行按连接隔离** — 同一提供商（如 CodeBuddy CN）配置多个连接时，隐藏某连接的配额包（如 Bonus Pack 1）不再影响其它连接的同类配额包。`quotaVisibility` 改为按连接 id 存储，兼容旧版 provider-key 设置（上游 [PR #3122](https://github.com/decolua/9router/pull/3122)）
 - **Per-connection quota row visibility** — hiding a bonus/refill pack on one account no longer hides it on another account of the same provider
 
 ### 修复 / Fixes
 
-- **免费供应商拓扑图开关** — noAuth 免费供应商（opencode、MiMo Code Free）现可在 Provider 页通过开关控制是否显示在「使用情况画布」（拓扑图）；MiMo 免费通道已终止，默认不显示，可手动开启
+- **免费供应商拓扑图开关** — noAuth 免费供应商（opencode、MiMo Code Free）现可在 Provider 页通过开关控制是否显示在「使用情况画布」（拓扑图）；MiMo 免费通道已终止，默认不显示，可手动开启（上游 [PR #3123](https://github.com/decolua/9router/pull/3123)）
 - **Free-provider topology toggle** — noAuth free providers get a show/hide toggle for the usage topology canvas; MiMo free (service ended) is hidden by default but re-toggleable
+
+### 货币显示 / Currency
+
+- **成本按界面语言显示本地货币** — 中文 ¥、台湾 NT$、日本 ¥、韩国 ₩、越南 ₫，可在 Profile 开关（上游 [PR #3118](https://github.com/decolua/9router/pull/3118)）
+- **Regional currency display** — cost shown in local currency by UI locale
 
 ### 变更 / Changed
 
-- 版本号 `0.5.50.6`（源码级：货币 PR #3118 + 配额/拓扑补丁）
+- 版本号 `0.5.51`（源码级：货币 PR #3118 + 配额/拓扑补丁）
 
 ---
 

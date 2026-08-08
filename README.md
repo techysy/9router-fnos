@@ -74,6 +74,10 @@ Dashboard 里配置 AI 提供商（如 Kiro AI 免费模型）后即可使用。
 
 这些增强从源码编译进包（`NEXT_DIST_DIR=.next-cli-build npm run build`），构建流程见下方「从源码构建」。
 
+### 📸 效果图
+
+各增强的实际效果图（来自上游 PR 评论），见 [docs/SCREENSHOTS.md](./docs/SCREENSHOTS.md)。
+
 ## 🛠️ 从源码构建
 
 > 面向开发者。普通用户直接用 Release 即可。本包基于源码构建（含货币/配额/拓扑增强），而非从 npm 包提取。

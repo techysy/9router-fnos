@@ -74,6 +74,10 @@ Compared to upstream [decolua/9router](https://github.com/decolua/9router), this
 
 These enhancements are compiled into the package from source (`NEXT_DIST_DIR=.next-cli-build npm run build`); see "Build from Source" below.
 
+### 📸 Screenshots
+
+Actual screenshots of each enhancement (from the upstream PR comments): see [docs/SCREENSHOTS.md](./docs/SCREENSHOTS.md).
+
 ## 🛠️ Build from Source
 
 > For developers. Most users should use the Release. This package is built from source (with the currency/quota/topology enhancements), not extracted from the npm package.

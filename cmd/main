@@ -17,9 +17,16 @@ else
     exit 1
 fi
 
-# Node.js 运行时（fnOS App Center nodejs_v24）
-NODE_BIN="/vol4/@appcenter/nodejs_v24/bin/node"
-[ -x "${NODE_BIN}" ] || NODE_BIN="$(command -v node || echo /usr/bin/node)"
+# Node.js 运行时（由 manifest install_dep_apps=nodejs_v24 提供）
+NODE_BIN=""
+for cand in "/var/apps/nodejs_v24/target/bin/node" "/vol4/@appcenter/nodejs_v24/bin/node"; do
+  [ -x "$cand" ] && NODE_BIN="$cand" && break
+done
+[ -n "$NODE_BIN" ] || NODE_BIN="$(command -v node || echo /usr/bin/node)"
+if [ ! -x "$NODE_BIN" ]; then
+  echo "ERROR: Node.js runtime not found. Please install the 'nodejs_v24' app from the fnOS App Center." >&2
+  exit 1
+fi
 
 PORT="${TRIM_SERVICE_PORT:-20128}"
 HOSTNAME="0.0.0.0"

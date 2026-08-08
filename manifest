@@ -12,3 +12,4 @@ desktop_uidir         = ui
 desktop_applaunchname = 9router.Application
 service_port          = 20128
 ctl_stop              = true
+install_dep_apps      = nodejs_v24

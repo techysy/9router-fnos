@@ -13,6 +13,8 @@
 
 - **免费供应商拓扑图开关** — noAuth 免费供应商（opencode、MiMo Code Free）现可在 Provider 页通过开关控制是否显示在「使用情况画布」（拓扑图）；MiMo 免费通道已终止，默认不显示，可手动开启（上游 [PR #3123](https://github.com/decolua/9router/pull/3123)）
 - **Free-provider topology toggle** — noAuth free providers get a show/hide toggle for the usage topology canvas; MiMo free (service ended) is hidden by default but re-toggleable
+- **声明 Node.js 运行时依赖** — manifest 增加 `install_dep_apps=nodejs_v24`，安装时自动检查/安装 Node.js 运行时，避免其他用户因未装 nodejs 而无法启动（`cmd/main` 改为规范路径 `/var/apps/nodejs_v24/target/bin` 并增强探测）
+- **Declare Node.js runtime dependency** — `install_dep_apps=nodejs_v24` so the runtime installs automatically; `cmd/main` uses the standard path with fallback probing
 
 ### 货币显示 / Currency
 

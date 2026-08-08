@@ -1,3 +1,5 @@
+<img width="2286" height="1634" alt="image" src="https://github.com/user-attachments/assets/cc8a02cd-e186-47aa-80f6-4c1fa50fe2b7" />
+
 # 9Router for fnOS
 
 [![GitHub release](https://img.shields.io/github/v/release/techysy/9router-fnos?label=Latest&color=blue)](https://github.com/techysy/9router-fnos/releases)

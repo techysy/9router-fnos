@@ -1,4 +1,6 @@
-<img width="2286" height="1634" alt="image" src="https://github.com/user-attachments/assets/cc8a02cd-e186-47aa-80f6-4c1fa50fe2b7" />
+<img width="686" height="386" alt="633200744-e22fa480-f109-4cd9-a61d-62e28a474127" src="https://github.com/user-attachments/assets/8f89bca9-7894-465e-af7e-1c85d479c683" />
+
+
 
 # 9Router for fnOS
 

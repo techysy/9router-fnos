@@ -48,6 +48,17 @@ Configure AI providers (e.g. Kiro AI free models) in the Dashboard, then start u
 | Data dir | `/vol4/@appdata/9router/` |
 | Node runtime | fnOS App Center `nodejs_v24` |
 
+### 🌐 Direct browser access
+
+The **iframe variant** (embedded in desktop) can also be opened **directly in a browser**, same experience as the desktop window:
+
+| Access | URL |
+|---|---|
+| LAN (intranet) | `http://<NAS-IP>:20128` |
+| Remote (internet) | `http://9route.<fnid>.fnos.net/` |
+
+> 💡 For the full experience, use a desktop/mobile browser directly at the URLs above.
+
 ### Login
 
 This app ships with **login disabled** (`requireLogin=false`) to work with the fnOS mobile app container. API calls are still guarded by API Key.
@@ -59,7 +70,7 @@ The fnOS mobile app (iOS/Android) opens every app in its own WebView iframe, wit
 - **Cannot log in**: `SameSite=lax` login cookies don't persist in the container (login loop). This app disables login to work around it.
 - **Limited UI persistence**: `localStorage` / theme switching / currency patch (¥) may not visibly apply.
 
-> 💡 For the full experience, use a **desktop browser** or **mobile browser** directly at `http://<NAS-IP>:20128`.
+> 💡 For the full experience, use a **desktop browser** or **mobile browser** directly — see the "🌐 Direct browser access" section above (LAN `http://<NAS-IP>:20128` / remote `http://9route.<fnid>.fnos.net/`).
 
 ## 🔧 Enhancements vs Upstream
 

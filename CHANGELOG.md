@@ -2,6 +2,15 @@
 
 ---
 
+## v0.5.52 (2026-08-09)
+
+### 修复 / Fixes
+
+- **默认密码不一致修复** — 修复部署 `.env` 中 `INITIAL_PASSWORD` 为示例值 `change-me`，与前端登录页显示的默认密码 `123456` 不一致的问题。现已统一为 `123456`，首次登录无需修改配置即可使用默认密码
+- **Fix default password mismatch** — deployment `.env` shipped with placeholder `INITIAL_PASSWORD=change-me`, inconsistent with the `123456` default shown on the login page. Now unified to `123456`
+
+---
+
 ## v0.5.51 (2026-08-08)
 
 ### 新增 / Added

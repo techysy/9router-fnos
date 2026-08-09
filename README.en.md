@@ -61,14 +61,14 @@ The **iframe variant** (embedded in desktop) can also be opened **directly in a 
 
 ### Login
 
-This app ships with **login disabled** (`requireLogin=false`) to work with the fnOS mobile app container. API calls are still guarded by API Key.
+This app **enables login by default** (`requireLogin=true`, source-build default). First login uses the initial password `123456` (unified since v0.5.52, matching the login page). API calls are still guarded by API Key.
 
 ### ⚠️ fnOS Mobile App Limits
 
 The fnOS mobile app (iOS/Android) opens every app in its own WebView iframe, with limitations:
 
-- **Cannot log in**: `SameSite=lax` login cookies don't persist in the container (login loop). This app disables login to work around it.
-- **Limited UI persistence**: `localStorage` / theme switching / currency patch (¥) may not visibly apply.
+- **Cannot log in**: `SameSite=lax` login cookies don't persist in the container (login loop). If you need to use it inside the mobile-app container, disable **Require Login** under **Profile → Settings** to work around it (toggle is available on the login page).
+- **Limited UI persistence**: `localStorage` / theme switching may not visibly apply (currency is compiled into the source build, not a runtime patch).
 
 > 💡 For the full experience, use a **desktop browser** or **mobile browser** directly — see the "🌐 Direct browser access" section above (LAN `http://<NAS-IP>:20128` / remote `http://9route.<fnid>.fnos.net/`).
 

@@ -66,14 +66,14 @@ Dashboard 里配置 AI 提供商（如 Kiro AI 免费模型）后即可使用。
 
 ### 登录说明
 
-本应用**默认关闭登录**（`requireLogin=false`），适配飞牛移动 App 容器。API 调用仍受 API Key 保护。
+本应用**默认开启登录**（`requireLogin=true`，源码构建默认），首次登录使用初始密码 `123456`（v0.5.52 起已统一，与登录页默认一致）。API 调用仍受 API Key 保护。
 
 ### ⚠️ 飞牛移动 App 限制
 
 飞牛移动 App（iOS/Android）用 **WebView iframe** 打开所有应用，存在限制：
 
-- **无法登录**：登录 cookie（`SameSite=lax`）无法在容器内保存，会反复跳回登录页（本应用已关闭登录规避）
-- **UI 持久化有限**：`localStorage` / 主题切换 / 货币补丁（¥）在容器内可能不生效
+- **无法登录**：登录 cookie（`SameSite=lax`）无法在容器内保存，会反复跳回登录页。如确需在移动 App 容器内使用，可在 **Profile → Settings** 关闭「Require Login」规避（登录页可关闭）
+- **UI 持久化有限**：`localStorage` / 主题切换在容器内可能不生效（货币功能已合入源码，随构建生效，非运行时补丁）
 
 > 💡 完整体验请用**电脑浏览器**或**手机浏览器**直接访问，见上方「🌐 浏览器直接访问」（内网 `http://<NAS-IP>:20128` / 外网 `http://9route.<fnid>.fnos.net/`）。
 

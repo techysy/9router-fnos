@@ -148,13 +148,13 @@ grep '百万 Token' /vol4/@appcenter/9router/server/public/i18n/literals/zh-CN.j
 
 > ⚠️ 补丁在每次 `prepare-server.sh` 构建时自动应用，但**升级 9Router 重新打包后会覆盖**，需重新构建。
 
-## 飞牛移动 App 容器内无法登录 / 货币补丁不生效
+## 飞牛移动 App 容器内无法登录 / UI 不生效
 
-**症状**: 在飞牛移动 App（iOS/Android）打开 9Router，反复跳回登录页，或货币补丁/主题切换不生效。
+**症状**: 在飞牛移动 App（iOS/Android）打开 9Router，反复跳回登录页，或主题切换不生效。
 
 **原因**: 飞牛移动 App 用 **WebView iframe** 打开所有应用：
 
 - 登录 cookie（`SameSite=lax`）无法在容器内保存 → 反复跳登录页
-- `localStorage` / JS 驱动的 UI 状态持久化受限 → 主题、货币补丁可能不生效
+- `localStorage` / JS 驱动的 UI 状态持久化受限 → 主题切换可能不生效
 
-**解决**: 本应用已**关闭登录**（`requireLogin=false`）规避容器登录问题（内网自用，API 调用仍受 `requireApiKey` 保护）。如需完整体验，用电脑浏览器或手机浏览器直接访问 `http://<NAS-IP>:20128`。
+**解决**: 本应用**默认开启登录**（`requireLogin=true`，源码构建默认），首次登录用初始密码 `123456`。若确需在移动 App 容器内使用且无法登录，可在 **Profile → Settings** 关闭「Require Login」规避（登录页可关闭）。API 调用仍受 API Key 保护。如需完整体验，用电脑浏览器或手机浏览器直接访问 `http://<NAS-IP>:20128`（货币功能已合入源码，非运行时补丁）。

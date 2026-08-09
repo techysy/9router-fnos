@@ -22,8 +22,8 @@
 ## 🚀 快速安装
 
 1. 下载 fpk 安装包：
-   - **普通版**（桌面独立窗口）：[9router-0.5.51.fpk](https://github.com/techysy/9router-fnos/releases/download/v0.5.51/9router-0.5.51.fpk)
-   - **iframe 版**（桌面内嵌）：[9router-0.5.51-iframe.fpk](https://github.com/techysy/9router-fnos/releases/download/v0.5.51/9router-0.5.51-iframe.fpk)
+   - **普通版**（桌面独立窗口）：[9router-0.5.52.fpk](https://github.com/techysy/9router-fnos/releases/download/v0.5.52/9router-0.5.52.fpk)
+   - **iframe 版**（桌面内嵌）：[9router-0.5.52-iframe.fpk](https://github.com/techysy/9router-fnos/releases/download/v0.5.52/9router-0.5.52-iframe.fpk)
 2. 飞牛 **App Center → 手动安装** → 选择 fpk
 3. 桌面出现 **9Router** 图标，点击打开 Dashboard
 
@@ -48,7 +48,7 @@
 ## 🔗 相关链接
 
 - **项目仓库**：[techysy/9router-fnos](https://github.com/techysy/9router-fnos)
-- **Release 下载**：[v0.5.51](https://github.com/techysy/9router-fnos/releases/tag/v0.5.51)
+- **Release 下载**：[v0.5.52](https://github.com/techysy/9router-fnos/releases/tag/v0.5.52)
 - **上游项目**：[decolua/9router](https://github.com/decolua/9router)
 
 > ⚠️ 小提示：安装后若打开 Dashboard 未显示完整功能，请浏览器硬刷新（Ctrl+Shift+R）清除旧 JS 缓存。

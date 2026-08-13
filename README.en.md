@@ -21,6 +21,7 @@ Packages [decolua/9router](https://github.com/decolua/9router) as a fnOS desktop
 - **Multi-currency cost**: Cost/pricing shows local currency by UI locale (¥/NT$/¥/₩/₫), toggle in Profile
 - **Per-connection quota rows**: With multiple connections of the same provider, each connection's quota packs (e.g. Bonus Pack) are shown/hidden independently
 - **Toggleable free providers**: noAuth free providers (opencode, MiMo) can be shown/hidden on the Usage topology canvas from the Providers page
+- **No built-in dump when no connections**: with a healthy DB but zero provider connections, `/v1/models` only returns the user's explicitly added custom models (e.g. `oc/*-free`) instead of the ~680 built-in models (upstream [PR #3267](https://github.com/decolua/9router/pull/3267))
 
 ## 🚀 Quick Install
 
@@ -82,6 +83,7 @@ Compared to upstream [decolua/9router](https://github.com/decolua/9router), this
 | **Per-connection quota rows** | Same provider with multiple connections: each connection's quota packs shown/hidden independently | [#3122](https://github.com/decolua/9router/pull/3122) |
 | **Free-provider topology toggle** | noAuth free providers (opencode, MiMo) show/hide on the Usage topology canvas from the Providers page | [#3123](https://github.com/decolua/9router/pull/3123) |
 | **Cloudflare fix** | Fixes Cloudflare card wrongly showing "No connections" (already in upstream v0.5.50) | [#2993](https://github.com/decolua/9router/pull/2993) |
+| **No built-in dump when no connections** | With zero provider connections and a healthy DB, `/v1/models` returns only custom models/combos, not all ~680 built-in models | [#3267](https://github.com/decolua/9router/pull/3267) |
 
 These enhancements are compiled into the package from source (`NEXT_DIST_DIR=.next-cli-build npm run build`); see "Build from Source" below.
 

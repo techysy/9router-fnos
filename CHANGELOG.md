@@ -2,6 +2,22 @@
 
 ---
 
+## v0.5.53 (2026-08-13)
+
+### 修复 / Fixes
+
+- **无连接时不暴露全部内置模型** — 数据库健康但没有任何 provider 连接时，`/v1/models` 不再把内置的 ~680 个模型全部返回给客户端（OpenCode / Cursor 等），只返回用户显式添加的自定义模型（如 `oc/*-free`）。区分「数据库不可用」（兜底返回全部静态模型）与「数据库正常但无连接」（只返回自定义模型/组合）（上游 [PR #3267](https://github.com/decolua/9router/pull/3267)）
+- **Don't dump full built-in catalog when DB healthy but has no connections** — with zero provider connections and a healthy DB, `/v1/models` now exposes only user-added custom models / combos instead of the entire static catalog (~680 models), avoiding flooding clients like OpenCode with mostly-unusable entries.
+
+### 变更 / Changed
+
+- **MiMo Code Free 默认在拓扑图显示** — 修复「免费供应商拓扑图」只有一个大 OpenCode 图标的问题：`mimo-free` 默认不再隐藏（`topologyHiddenByDefault=false`），保持与其它免费供应商一致；用户仍可通过 Provider 页开关隐藏/显示
+- **MiMo Code Free shown on topology by default** — the usage-topology canvas no longer collapses to a single large OpenCode icon; `mimo-free` defaults to visible (toggle still available on the Providers page to hide/show it)
+- 版本号 `0.5.53`（基于上游 master，含 models 空连接修复）
+- 实测验证（fnOS NAS）：修复前 `/v1/models` 返回 681 个模型，修复后仅返回 `oc/deepseek-v4-flash-free`、`oc/mimo-v2.5-free` 两个自定义模型
+
+---
+
 ## v0.5.52 (2026-08-09)
 
 ### 修复 / Fixes

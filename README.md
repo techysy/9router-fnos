@@ -26,6 +26,7 @@
 - **多币种成本显示**：成本/定价按界面语言显示本地货币（¥/NT$/¥/₩/₫），可在 Profile 开关切换
 - **配额包按连接独立**：同一提供商配多个连接时，各连接的配额包（如 Bonus Pack）独立显示与隐藏
 - **免费供应商可开关**：noAuth 免费供应商（opencode、MiMo）可在 Provider 页控制是否显示在「使用情况画布」
+- **无连接时不暴露全部内置模型**：数据库健康但未配置任何 provider 连接时，`/v1/models` 只返回你显式添加的自定义模型（如 `oc/*-free`），不会把 ~680 个内置模型全部抛给 OpenCode/Cursor 等客户端（上游 [PR #3267](https://github.com/decolua/9router/pull/3267)）
 
 ## 🚀 快速安装
 
@@ -87,6 +88,7 @@ Dashboard 里配置 AI 提供商（如 Kiro AI 免费模型）后即可使用。
 | **配额包按连接独立** | 同一提供商（如 CodeBuddy CN）配多个连接时，各连接的配额包独立显示/隐藏 | [#3122](https://github.com/decolua/9router/pull/3122) |
 | **免费供应商拓扑开关** | noAuth 免费供应商（opencode、MiMo）可在 Provider 页开关是否显示在「使用情况画布」 | [#3123](https://github.com/decolua/9router/pull/3123) |
 | **Cloudflare 修复** | 修复 Cloudflare 卡片误显示"无连接"（已随上游 v0.5.50 包含） | [#2993](https://github.com/decolua/9router/pull/2993) |
+| **无连接不暴露内置模型** | 数据库健康但无 provider 连接时，`/v1/models` 只返回自定义模型/组合，不 dump 全部 ~680 内置模型 | [#3267](https://github.com/decolua/9router/pull/3267) |
 
 这些增强从源码编译进包（`NEXT_DIST_DIR=.next-cli-build npm run build`），构建流程见下方「从源码构建」。
 

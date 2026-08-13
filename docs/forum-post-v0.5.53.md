@@ -19,6 +19,12 @@
 > 实测（fnOS NAS）：修复前 `/v1/models` 返回 681 个模型，修复后仅返回 `oc/deepseek-v4-flash-free`、`oc/mimo-v2.5-free` 两个自定义模型。
 > 上游 PR：[#3267](https://github.com/decolua/9router/pull/3267)
 
+### 🗺️ 2. MiMo Code Free 默认在拓扑图显示
+
+修复「免费供应商拓扑图」**只有一个大 OpenCode 图标**的问题：`mimo-free` 默认不再隐藏，与其它免费供应商一致地显示在「使用情况画布」上。
+
+> 如果你不想看到它，仍可在 **Provider 页** 用开关把它隐藏（也可再重新显示）。
+
 ## 📦 下载安装
 
 1. 下载 fpk 安装包（普通版 / iframe 版任选）：

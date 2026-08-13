@@ -21,6 +21,7 @@ Packages [decolua/9router](https://github.com/decolua/9router) as a fnOS desktop
 - **Multi-currency cost**: Cost/pricing shows local currency by UI locale (¥/NT$/¥/₩/₫), toggle in Profile
 - **Per-connection quota rows**: With multiple connections of the same provider, each connection's quota packs (e.g. Bonus Pack) are shown/hidden independently
 - **Toggleable free providers**: noAuth free providers (opencode, MiMo) can be shown/hidden on the Usage topology canvas from the Providers page
+- **MiMo Code Free shown by default**: `mimo-free` is now visible on the Usage topology canvas by default (no longer a single large OpenCode node), still hideable via the Providers-page toggle
 - **No built-in dump when no connections**: with a healthy DB but zero provider connections, `/v1/models` only returns the user's explicitly added custom models (e.g. `oc/*-free`) instead of the ~680 built-in models (upstream [PR #3267](https://github.com/decolua/9router/pull/3267))
 
 ## 🚀 Quick Install

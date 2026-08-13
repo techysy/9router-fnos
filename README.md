@@ -26,6 +26,7 @@
 - **多币种成本显示**：成本/定价按界面语言显示本地货币（¥/NT$/¥/₩/₫），可在 Profile 开关切换
 - **配额包按连接独立**：同一提供商配多个连接时，各连接的配额包（如 Bonus Pack）独立显示与隐藏
 - **免费供应商可开关**：noAuth 免费供应商（opencode、MiMo）可在 Provider 页控制是否显示在「使用情况画布」
+- **MiMo Code Free 默认显示**：`mimo-free` 默认在「使用情况画布」显示（不再只一个大 OpenCode 图标），仍可通过 Provider 页开关隐藏/显示
 - **无连接时不暴露全部内置模型**：数据库健康但未配置任何 provider 连接时，`/v1/models` 只返回你显式添加的自定义模型（如 `oc/*-free`），不会把 ~680 个内置模型全部抛给 OpenCode/Cursor 等客户端（上游 [PR #3267](https://github.com/decolua/9router/pull/3267)）
 
 ## 🚀 快速安装

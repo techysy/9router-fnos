@@ -2,6 +2,31 @@
 
 ---
 
+## v0.5.55 (2026-08-14)
+
+### 新增 / Added
+
+- **SAML 2.0 SSO**：原生 SAML 单点登录（与 OIDC 并列）— AuthnRequest 生成、ACS 断言处理、SP 元数据导出、管理员配置测试、防重放（`saml_state` cookie 匹配 `InResponseTo`）
+- **Alibaba Token Plan**：新增阿里 token 计费计划（`token-plan.ap-southeast-1`，新加坡、仅 OpenAI 兼容传输）
+- **GLM 5.3**：加入 GLM Coding 与 GLM（China）
+- **Gemini 3.7 Flash**：加入 Antigravity 及 Gemini registry（含 high/medium/low 档位，带定价与配额跟踪）
+- **Fish Audio TTS**：新增文字转语音提供商（模型 ID 走 HTTP `model` 头，voice 为 `reference_id`）
+- **OpenCode-Go 按传输路由**：按声明的 transports 路由请求格式，不再强制所有客户端走 `/messages`，避免 Responses→OpenAI→Claude 双重翻译损耗；per-model `supportedFormats` 防护
+- **Claude 配额调用去重+缓存**：120s TTL（按 access token 键控）、in-flight promise 去重、软失败时读上次成功值，避免多标签页触发 429；手动刷新（↻）发送 `force=1` 绕过缓存
+
+### 修复 / Fixes
+
+- **Docker 内置 sql.js**：镜像带上纯 JS 数据库回退所需的 `sql.js`（无原生驱动时不再 ENOENT 崩溃，[#3248](https://github.com/decolua/9router/pull/3248)）
+- **Gemini 用量统计**：从 antigravity `{ response }` 包中读取 `usageMetadata`，修复非流式请求用量记录为 0（[#3260](https://github.com/decolua/9router/pull/3260)）
+- **Claude 缓存断点**：重新锚定透传缓存断点，修复每次请求重复缓存尾部的问题（system/工具 1h TTL、最后 assistant 5m）
+- **Kiro**：拦截 `x-amz-target` 方式（Kiro IDE 1.0.228+ 改用 `POST /` + header）；报告真实输出 token
+- **安全**：要求 `x-9r-real-ip` 必须来自 socket 证明（[GHSA-pjm4-8fpg-f9p6](https://github.com/decolua/9router/security/advisories/GHSA-pjm4-8fpg-f9p6)）
+- **版本号 `0.5.55`**（基于上游 master，含以上更新 + 本包货币/配额/拓扑增强）
+
+> 本包从源码构建（含多币种成本显示、配额包按连接隔离、免费供应商拓扑开关、MiMo Code Free 默认显示等增强），见 README「本项目增强」。
+
+---
+
 ## v0.5.53 (2026-08-13)
 
 ### 修复 / Fixes

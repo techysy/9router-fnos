@@ -4,7 +4,9 @@ set -uo pipefail
 
 APP_NAME="${TRIM_APPNAME:-9router}"
 APP_DIR="${TRIM_APPDEST:-/var/apps/${APP_NAME}}"
-DATA_DIR="${TRIM_PKGVAR:-/vol4/@appdata/${APP_NAME}}"
+# 数据目录: 优先 TRIM_PKGVAR (fnOS 注入); 兜底从 APP_DIR 提取卷推导, 不写死 /vol4
+APP_VOL="$(printf '%s' "${APP_DIR}" | sed -n 's#^\(/vol[^/]*\)/.*#\1#p')"
+DATA_DIR="${TRIM_PKGVAR:-${APP_VOL}/@appdata/${APP_NAME}}"
 LOG="${DATA_DIR}/install.log"
 
 mkdir -p "${DATA_DIR}"

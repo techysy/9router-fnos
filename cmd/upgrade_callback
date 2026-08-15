@@ -1,3 +1,56 @@
 #!/bin/bash
-# 升级后置
+# 升级后置：确保数据目录可写 + 在线构建 server (若 fpk 未内置构建产物)
+set -uo pipefail
+
+APP_NAME="${TRIM_APPNAME:-9router}"
+APP_DIR="${TRIM_APPDEST:-/var/apps/${APP_NAME}}"
+DATA_DIR="${TRIM_PKGVAR:-/vol4/@appdata/${APP_NAME}}"
+LOG="${DATA_DIR}/install.log"
+
+mkdir -p "${DATA_DIR}"
+echo "[$(date '+%F %T')] upgrade_callback start" >> "${LOG}"
+
+# 定位 server 目录
+SRC_DIR=""
+for cand in "${APP_DIR}/server" "${APP_DIR}/target/server"; do
+    [ -d "$cand" ] && SRC_DIR="$cand" && break
+done
+if [ -z "${SRC_DIR}" ]; then
+    echo "[$(date '+%F %T')] ERROR: server dir not found (${APP_DIR}/server)" >> "${LOG}"
+    exit 0
+fi
+
+# 若已含构建产物, 跳过在线构建
+if [ -d "${SRC_DIR}/.next-cli-build" ]; then
+    echo "[$(date '+%F %T')] server already built; skip online build" >> "${LOG}"
+    exit 0
+fi
+
+echo "[$(date '+%F %T')] online build: npm install + next build..." >> "${LOG}"
+APP_VOL="$(printf '%s' "${DATA_DIR}" | sed -n 's#^\(/vol[^/]*\)/.*#\1#p')"
+NODE_DIR=""
+for cand in /var/apps/nodejs_v24/target/bin "${APP_VOL}/@appcenter/nodejs_v24/bin"; do
+    [ -x "$cand/node" ] && NODE_DIR="$cand" && break
+done
+if [ -z "${NODE_DIR}" ]; then
+    echo "[$(date '+%F %T')] ERROR: nodejs_v24 not found; cannot build 9router" >> "${LOG}"
+    exit 0
+fi
+export PATH="${NODE_DIR}:${PATH}"
+export HOME="${DATA_DIR}"
+export npm_config_jobs=1
+export NODE_OPTIONS="--max-old-space-size=1024"
+
+cd "${SRC_DIR}"
+npm install --no-audit --no-fund >> "${LOG}" 2>&1
+echo "[$(date '+%F %T')] npm install exit=$?" >> "${LOG}"
+NEXT_DIST_DIR=.next-cli-build npm run build >> "${LOG}" 2>&1
+echo "[$(date '+%F %T')] next build exit=$?" >> "${LOG}"
+
+if [ -d "${SRC_DIR}/.next-cli-build" ]; then
+    echo "[$(date '+%F %T')] online build OK" >> "${LOG}"
+else
+    echo "[$(date '+%F %T')] ERROR: online build did not produce .next-cli-build" >> "${LOG}"
+fi
+
 exit 0

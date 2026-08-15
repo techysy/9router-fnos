@@ -18,8 +18,9 @@ else
 fi
 
 # Node.js 运行时（由 manifest install_dep_apps=nodejs_v24 提供）
+APP_VOL="$(printf '%s' "${DATA_DIR}" | sed -n 's#^\(/vol[^/]*\)/.*#\1#p')"
 NODE_BIN=""
-for cand in "/var/apps/nodejs_v24/target/bin/node" "/vol4/@appcenter/nodejs_v24/bin/node"; do
+for cand in "/var/apps/nodejs_v24/target/bin/node" "${APP_VOL}/@appcenter/nodejs_v24/bin/node" "/vol4/@appcenter/nodejs_v24/bin/node"; do
   [ -x "$cand" ] && NODE_BIN="$cand" && break
 done
 [ -n "$NODE_BIN" ] || NODE_BIN="$(command -v node || echo /usr/bin/node)"

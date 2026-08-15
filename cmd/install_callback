@@ -1,4 +1,63 @@
 #!/bin/bash
-# 安装后置：确保数据目录可写
-mkdir -p "${TRIM_PKGVAR:-/vol4/@appdata/9router}"
+# 安装后置：确保数据目录可写 + 在线构建 server (若 fpk 未内置构建产物)
+set -uo pipefail
+
+APP_NAME="${TRIM_APPNAME:-9router}"
+APP_DIR="${TRIM_APPDEST:-/var/apps/${APP_NAME}}"
+DATA_DIR="${TRIM_PKGVAR:-/vol4/@appdata/${APP_NAME}}"
+LOG="${DATA_DIR}/install.log"
+
+mkdir -p "${DATA_DIR}"
+echo "[$(date '+%F %T')] install_callback start" >> "${LOG}"
+
+# 定位 server 目录 (fpk 内置源码/构建产物解压到 ${APP_DIR}/server)
+SRC_DIR=""
+for cand in "${APP_DIR}/server" "${APP_DIR}/target/server"; do
+    [ -d "$cand" ] && SRC_DIR="$cand" && break
+done
+if [ -z "${SRC_DIR}" ]; then
+    echo "[$(date '+%F %T')] ERROR: server dir not found (${APP_DIR}/server)" >> "${LOG}"
+    exit 0
+fi
+
+# 若已含构建产物 (.next-cli-build), 跳过在线构建
+if [ -d "${SRC_DIR}/.next-cli-build" ]; then
+    echo "[$(date '+%F %T')] server already built (.next-cli-build present); skip online build" >> "${LOG}"
+    exit 0
+fi
+
+echo "[$(date '+%F %T')] online build: npm install + next build..." >> "${LOG}"
+# 动态获取应用卷 (从数据目录提取 /volX), 避免写死卷路径
+APP_VOL="$(printf '%s' "${DATA_DIR}" | sed -n 's#^\(/vol[^/]*\)/.*#\1#p')"
+
+# 定位 nodejs_v24 (优先 fnOS 标准软链 /var/apps/<dep>/target, fallback 应用卷)
+NODE_DIR=""
+for cand in /var/apps/nodejs_v24/target/bin "${APP_VOL}/@appcenter/nodejs_v24/bin"; do
+    [ -x "$cand/node" ] && NODE_DIR="$cand" && break
+done
+if [ -z "${NODE_DIR}" ]; then
+    echo "[$(date '+%F %T')] ERROR: nodejs_v24 not found; cannot build 9router" >> "${LOG}"
+    exit 0
+fi
+export PATH="${NODE_DIR}:${PATH}"
+export HOME="${DATA_DIR}"
+# 低内存设备 (R2S 等 1GB) 降低并发, 降低 node 堆峰值 (next build 可能需要调大)
+export npm_config_jobs=1
+export NODE_OPTIONS="--max-old-space-size=1024"
+
+cd "${SRC_DIR}"
+echo "[$(date '+%F %T')] npm install..." >> "${LOG}"
+npm install --no-audit --no-fund >> "${LOG}" 2>&1
+echo "[$(date '+%F %T')] npm install exit=$?" >> "${LOG}"
+
+echo "[$(date '+%F %T')] next build (NEXT_DIST_DIR=.next-cli-build)..." >> "${LOG}"
+NEXT_DIST_DIR=.next-cli-build npm run build >> "${LOG}" 2>&1
+echo "[$(date '+%F %T')] next build exit=$?" >> "${LOG}"
+
+if [ -d "${SRC_DIR}/.next-cli-build" ]; then
+    echo "[$(date '+%F %T')] online build OK: .next-cli-build present" >> "${LOG}"
+else
+    echo "[$(date '+%F %T')] ERROR: online build did not produce .next-cli-build (check install.log)" >> "${LOG}"
+fi
+
 exit 0

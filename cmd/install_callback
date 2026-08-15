@@ -60,4 +60,14 @@ else
     echo "[$(date '+%F %T')] ERROR: online build did not produce .next-cli-build (check install.log)" >> "${LOG}"
 fi
 
+# 确保初始密码不是开发占位值 change-me (修正 server 内 .env / .env.example)
+for envf in "${SRC_DIR}/.env" "${SRC_DIR}/.env.example"; do
+    if [ -f "$envf" ]; then
+        if grep -q '^INITIAL_PASSWORD=change-me' "$envf" 2>/dev/null; then
+            sed -i 's/^INITIAL_PASSWORD=change-me.*/INITIAL_PASSWORD=123456/' "$envf" 2>/dev/null || true
+            echo "[$(date '+%F %T')] fixed INITIAL_PASSWORD=change-me -> 123456 in $envf" >> "${LOG}"
+        fi
+    fi
+done
+
 exit 0

@@ -109,6 +109,8 @@ Dashboard 里配置 AI 提供商（如 Kiro AI 免费模型）后即可使用。
 
 这些增强从源码编译进包（`NEXT_DIST_DIR=.next-cli-build npm run build`），构建流程见下方「从源码构建」。
 
+> 📖 **增强与优化详解**：构建来源（fork）、增强清单、fork 同步策略，见 [`docs/enhancements.md`](docs/enhancements.md)
+
 ### 📸 效果图
 
 各增强的实际效果图（来自上游 PR 评论），见 [docs/SCREENSHOTS.md](./docs/SCREENSHOTS.md)。

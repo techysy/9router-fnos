@@ -14,9 +14,25 @@
 
 **9Router for fnOS** 将 [decolua/9router](https://github.com/decolua/9router) 打包为 fnOS 桌面应用，开箱即用。
 
+> 本包基于**修改过的上游 fork**（[techysy/9router](https://github.com/techysy/9router)，含本地增强）从源码构建，**并非纯上游**。在完整上游功能之上，额外包含货币/配额/拓扑等增强（见下方「本项目增强」），并已同步上游至 v0.5.55。
+
 - [English README](./README.en.md)
 
 ---
+
+## 📦 下载（按架构 + 桌面模式选择）
+
+从 [Releases](https://github.com/techysy/9router-fnos/releases) 下载 fpk：
+
+| 版本 | 架构 | 桌面模式 |
+|------|------|---------|
+| `9router-<ver>-x86.fpk` | x86 | 普通（浏览器/新标签页），离线 |
+| `9router-<ver>-iframe-x86.fpk` | x86 | 桌面内嵌，离线 |
+| `9router-<ver>-all.fpk` | x86 / ARM | 普通，在线构建 |
+| `9router-<ver>-iframe-all.fpk` | x86 / ARM | 桌面内嵌，在线构建 |
+
+- **x86 版**：含 node_modules（离线），安装免联网
+- **all 版**：在线构建（装时 `npm install` + `next build`），x86/ARM 通用；首次安装耗时较长，低内存设备建议先加 swap
 
 ## ✨ 功能亮点
 
@@ -31,7 +47,7 @@
 
 ## 🚀 快速安装
 
-1. 从 [Releases](https://github.com/techysy/9router-fnos/releases) 下载 `9router-x.x.x.fpk`
+1. 从 [Releases](https://github.com/techysy/9router-fnos/releases) 下载 fpk（按架构选，见上方「📦 下载」）
 2. 飞牛 **App Center → 手动安装** → 选择 fpk
 3. 桌面出现 **9Router** 图标，点击打开 Dashboard
 
@@ -68,7 +84,7 @@ Dashboard 里配置 AI 提供商（如 Kiro AI 免费模型）后即可使用。
 
 ### 登录说明
 
-本应用**默认开启登录**（`requireLogin=true`，源码构建默认），首次登录使用初始密码 `123456`（v0.5.52 起已统一，与登录页默认一致）。API 调用仍受 API Key 保护。
+本应用**默认开启登录**（`requireLogin=true`，源码构建默认），首次登录使用初始密码 **`123456`**（已统一，`.env.example` 的 `INITIAL_PASSWORD` 已从开发占位值 `change-me` 改为 `123456`，安装/升级时自动修正）。API 调用仍受 API Key 保护。
 
 ### ⚠️ 飞牛移动 App 限制
 
@@ -99,11 +115,12 @@ Dashboard 里配置 AI 提供商（如 Kiro AI 免费模型）后即可使用。
 
 ## 🛠️ 从源码构建
 
-> 面向开发者。普通用户直接用 Release 即可。本包基于源码构建（含货币/配额/拓扑增强），而非从 npm 包提取。
+> 面向开发者。普通用户直接用 Release 即可。
+> 本包基于**修改过的 fork**（[techysy/9router](https://github.com/techysy/9router)，含本地增强分支）构建，而非纯上游或 npm 包提取。
 
 ```bash
 git clone https://github.com/techysy/9router-fnos.git
-# 需要 9Router 源码（含增强补丁分支）：
+# 需要 9Router 源码（含增强补丁分支 = fork techysy/9router, 已同步上游 + 本地增强）：
 git clone https://github.com/techysy/9router.git 9router-src
 
 cd 9router-src

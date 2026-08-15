@@ -58,7 +58,7 @@ def _gradient_bg(size, c1=(0xE5, 0x6A, 0x4A), c2=(0xa6, 0x40, 0x27)):
 
 def _make_icon(size: int):
     bg = _gradient_bg(size)
-    hub = _hub_png(size).resize((int(size * 0.55), int(size * 0.55)), Image.LANCZOS)
+    hub = _hub_png(size).resize((int(size * 0.68), int(size * 0.68)), Image.LANCZOS)
     x = (size - hub.size[0]) // 2
     y = (size - hub.size[1]) // 2
     bg.paste(hub, (x, y), hub)

@@ -18,28 +18,30 @@ fork 的状态：
 
 ## 2. 功能增强清单
 
-### 2.1 多币种成本显示
+> **合并状态说明**：以下增强均**已提上游 PR，但目前尚未被上游合并**（本地独有，已随本包编译）。`✅ 已合并` = 上游已包含；`🕐 待合并` = 已提 PR 未合并。
+
+### 2.1 多币种成本显示 `🕐 待合并`
 成本/定价按界面语言显示本地货币：中文 ¥、台湾 NT$、日本 ¥、韩国 ₩、越南 ₫，Profile 开关切换。
-- 上游 [PR #3118](https://github.com/decolua/9router/pull/3118)
+- 上游 [PR #3118](https://github.com/decolua/9router/pull/3118)（**open，未合并**）
 
-### 2.2 配额包按连接独立
+### 2.2 配额包按连接独立 `🕐 待合并`
 同一提供商（如 CodeBuddy CN）配置多个连接时，隐藏某连接的配额包（Bonus Pack）不再影响其它连接的同类配额包。`quotaVisibility` 按连接 id 存储。
-- 上游 [PR #3122](https://github.com/decolua/9router/pull/3122)
+- 上游 [PR #3122](https://github.com/decolua/9router/pull/3122)（**open，未合并**）
 
-### 2.3 免费供应商拓扑开关
+### 2.3 免费供应商拓扑开关 `🕐 待合并`
 noAuth 免费供应商（opencode、MiMo Code Free）可在 Provider 页通过开关控制是否显示在「使用情况画布」（拓扑图）。
-- 上游 [PR #3123](https://github.com/decolua/9router/pull/3123)
+- 上游 [PR #3123](https://github.com/decolua/9router/pull/3123)（**open，未合并**）
 
-### 2.4 MiMo Code Free 默认显示
+### 2.4 MiMo Code Free 默认显示 `🕐 待合并`
 `mimo-free` 默认在「使用情况画布」显示（不再只一个大 OpenCode 图标），仍可通过 Provider 页开关隐藏/显示。
 
-### 2.5 无连接时不暴露全部内置模型
+### 2.5 无连接时不暴露全部内置模型 `🕐 待合并`
 数据库健康但未配置任何 provider 连接时，`/v1/models` 只返回显式添加的自定义模型（如 `oc/*-free`），不把 ~680 个内置模型全部抛给 OpenCode/Cursor 等客户端。
-- 上游 [PR #3267](https://github.com/decolua/9router/pull/3267)
+- 上游 [PR #3267](https://github.com/decolua/9router/pull/3267)（**open，未合并**）
 
-### 2.6 Cloudflare 修复
+### 2.6 Cloudflare 修复 `✅ 已合并（上游已含）`
 修复 Cloudflare 卡片误显示"无连接"。
-- 上游 [PR #2993](https://github.com/decolua/9router/pull/2993)（已随上游 v0.5.50 包含）
+- 上游 [PR #2993](https://github.com/decolua/9router/pull/2993)（closed，功能已随上游 v0.5.50 包含）
 
 ### 2.7 其他本地优化
 - **i18n zh-CN 翻译**：中文翻译优化

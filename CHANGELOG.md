@@ -2,6 +2,14 @@
 
 ---
 
+## v0.5.55.1 (2026-08-17)
+
+### 修复 / Fixed
+- **登录密码逻辑修复** — cmd/main 启动时设置 `INITIAL_PASSWORD`（默认 `123456`），避免数据库密码缺失/requireLogin=false 时远程访问被 "Default password must be changed before remote access" 拦截。首次登录后建议在 Web UI 修改为自定义密码。
+- Repack 基于线上 0.5.55 server（含最新增强），版本号对齐 0.5.55.1。
+
+---
+
 ## v0.5.55 (2026-08-14)
 
 ### 新增 / Added

@@ -59,7 +59,12 @@ start() {
         return 0
     fi
     cd "${SRC_DIR}"
+    # 初始密码: 数据库未设密码或 requireLogin=false 时, 用 INITIAL_PASSWORD 兜底,
+    # 避免远程访问用默认密码被 "Default password must be changed before remote access" 拦截。
+    # 首次登录后建议在 Web UI 修改为自定义密码。
+    INITIAL_PASSWORD="${INITIAL_PASSWORD:-123456}"
     DATA_DIR="${DATA_DIR}" PORT="${PORT}" HOSTNAME="${HOSTNAME}" \
+        INITIAL_PASSWORD="${INITIAL_PASSWORD}" \
         nohup "${NODE_BIN}" --max-old-space-size=4096 custom-server.js >> "${LOG}" 2>&1 &
     echo $! > "${PID_FILE}"
     # 等待服务就绪（最多 60s）

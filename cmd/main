@@ -58,6 +58,14 @@ start() {
         echo "already running (pid $(cat "${PID_FILE}"))"
         return 0
     fi
+    # 确保 .env 存在（NEXT.js 读取 INITIAL_PASSWORD 等配置）
+    if [ ! -f "${SRC_DIR}/.env" ]; then
+        cat > "${SRC_DIR}/.env" <<'ENVEOF'
+INITIAL_PASSWORD=123456
+JWT_SECRET=change-me-to-a-random-string
+ENVEOF
+        echo "created default .env in ${SRC_DIR}"
+    fi
     cd "${SRC_DIR}"
     # 初始密码: 数据库未设密码或 requireLogin=false 时, 用 INITIAL_PASSWORD 兜底,
     # 避免远程访问用默认密码被 "Default password must be changed before remote access" 拦截。

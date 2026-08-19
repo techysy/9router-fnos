@@ -37,9 +37,9 @@ if [ -z "${SRC_DIR}" ]; then
     exit 0
 fi
 
-# 若已含构建产物 (.next-cli-build), 跳过在线构建
-if [ -d "${SRC_DIR}/.next-cli-build" ]; then
-    echo "[$(date '+%F %T')] server already built (.next-cli-build present); skip online build" >> "${LOG}"
+# 若已含构建产物 (.next-cli-build 或 .next), 跳过在线构建
+if [ -d "${SRC_DIR}/.next-cli-build" ] || [ -d "${SRC_DIR}/.next" ]; then
+    echo "[$(date '+%F %T')] server already built (skip online build)" >> "${LOG}"
     exit 0
 fi
 

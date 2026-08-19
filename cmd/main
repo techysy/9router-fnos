@@ -58,6 +58,8 @@ start() {
         echo "already running (pid $(cat "${PID_FILE}"))"
         return 0
     fi
+    # 清理 SQLite WAL/SHM 残留（旧版/跨用户安装后属主可能错误，导致 node:sqlite 无法打开）
+    rm -f "${DATA_DIR}/db/data.sqlite-shm" "${DATA_DIR}/db/data.sqlite-wal" 2>/dev/null || true
     # 确保 .env 存在（NEXT.js 读取 INITIAL_PASSWORD 等配置）
     if [ ! -f "${SRC_DIR}/.env" ]; then
         cat > "${SRC_DIR}/.env" <<'ENVEOF'

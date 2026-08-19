@@ -1,8 +1,8 @@
 appname               = 9router
-version               = 0.5.55.1
+version               = 0.5.55
 display_name          = 9Router
 desc                  = FREE AI Router & Token Saver - AI 编码路由器，连接 Claude Code/Codex/Cursor 等工具到 40+ 免费 AI 提供商
-platform              = x86
+platform              = all
 source                = thirdparty
 maintainer            = decolua
 maintainer_url        = https://github.com/decolua/9router

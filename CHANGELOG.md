@@ -2,6 +2,18 @@
 
 ---
 
+## v0.5.55.2 (2026-08-20)
+
+### 修复 / Fixed
+- **SQLite WAL/SHM 启动清理** — cmd/main 启动前删除 `data.sqlite-shm`/`data.sqlite-wal` 残留，防止旧版/跨用户安装后属主错误导致 node:sqlite "unable to open database file"
+- **install_callback 多路径检测** — 检测 `.next-cli-build`/`.next` 支持 `APP_DIR/server` 和 `APP_DIR/target/server` 两条路径，x86 离线版不再误触发在线构建
+- **install_callback node_modules 兜底** — 若 `SRC_DIR` 缺 node_modules 但 `target/server` 有，自动创建符号链接
+
+### 新增 / Added
+- **wizard/install MIT 协议** — fpk 安装时显示 MIT License Agreement 确认页
+
+---
+
 ## v0.5.55.1 (2026-08-17)
 
 ### 修复 / Fixed

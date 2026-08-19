@@ -47,9 +47,16 @@ for envf in "${SRC_DIR}/.env" "${SRC_DIR}/.env.example"; do
     fi
 done
 
-# 若已含构建产物, 跳过在线构建
-if [ -d "${SRC_DIR}/.next-cli-build" ]; then
-    echo "[$(date '+%F %T')] server already built; skip online build" >> "${LOG}"
+# 若已含构建产物, 跳过在线构建（多路径检测）
+BUILT=0
+for check in "${SRC_DIR}/.next-cli-build" "${SRC_DIR}/.next" "${APP_DIR}/target/server/.next-cli-build" "${APP_DIR}/target/server/.next"; do
+    if [ -d "$check" ]; then BUILT=1; break; fi
+done
+if [ "$BUILT" -eq 1 ]; then
+    echo "[$(date '+%F %T')] server already built at ${check}; skip online build" >> "${LOG}"
+    if [ ! -d "${SRC_DIR}/node_modules" ] && [ -d "${APP_DIR}/target/server/node_modules" ]; then
+        ln -s "${APP_DIR}/target/server/node_modules" "${SRC_DIR}/node_modules" 2>/dev/null || true
+    fi
     exit 0
 fi
 

@@ -38,8 +38,18 @@ if [ -z "${SRC_DIR}" ]; then
 fi
 
 # 若已含构建产物 (.next-cli-build 或 .next), 跳过在线构建
-if [ -d "${SRC_DIR}/.next-cli-build" ] || [ -d "${SRC_DIR}/.next" ]; then
-    echo "[$(date '+%F %T')] server already built (skip online build)" >> "${LOG}"
+# 多路径检测：fpk 解压可能在不同位置完成
+BUILT=0
+for check in "${SRC_DIR}/.next-cli-build" "${SRC_DIR}/.next" "${APP_DIR}/target/server/.next-cli-build" "${APP_DIR}/target/server/.next"; do
+    if [ -d "$check" ]; then BUILT=1; break; fi
+done
+if [ "$BUILT" -eq 1 ]; then
+    echo "[$(date '+%F %T')] server already built at ${check} (skip online build)" >> "${LOG}"
+    # 确保 node_modules 完整（x86 离线版应自带）
+    if [ ! -d "${SRC_DIR}/node_modules" ] && [ -d "${APP_DIR}/target/server/node_modules" ]; then
+        ln -s "${APP_DIR}/target/server/node_modules" "${SRC_DIR}/node_modules" 2>/dev/null || true
+        echo "[$(date '+%F %T')] linked node_modules from target" >> "${LOG}"
+    fi
     exit 0
 fi
 

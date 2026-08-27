@@ -102,7 +102,7 @@ cat > "${BUILD_DIR}/manifest" <<EOF
 appname               = 10router
 version               = ${VERSION}
 display_name          = 10Router
-desc                  = FREE AI Router & Token Saver - AI 编码路由器（10Router 版，端口 20127）
+desc                  = FREE AI Router & Token Saver - AI 编码路由器（10Router 版，端口 20128）
 platform              = ${ARCH}
 source                = thirdparty
 maintainer            = decolua
@@ -111,7 +111,7 @@ distributor           = techysy
 distributor_url       = https://github.com/techysy/9router-fnos
 desktop_uidir         = ui
 desktop_applaunchname = 10router.Application
-service_port          = 20127
+service_port          = 20128
 ctl_stop              = true
 install_dep_apps      = nodejs_v24
 EOF
@@ -127,7 +127,7 @@ cat > "${BUILD_DIR}/app/ui/config" <<'EOF'
       "icon": "images/icon_{0}.png",
       "type": "url",
       "protocol": "http",
-      "port": "20127",
+      "port": "20128",
       "url": "/",
       "allUsers": true
     }

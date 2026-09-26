@@ -1,67 +1,64 @@
-<img width="960" height="540" alt="1080" src="https://github.com/user-attachments/assets/10bbb365-f794-4622-94ba-4a0e08409fc3" />
+<div align="center">
 
-
-
+<img src="ICON_256.PNG" width="96" alt="9Router for fnOS">
 
 # 9Router for fnOS
 
-[![GitHub release](https://img.shields.io/github/v/release/techysy/9router-fnos?label=Latest&color=blue)](https://github.com/techysy/9router-fnos/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/techysy/9router-fnos/blob/main/LICENSE)
-[![fnOS 1.1.31xx](https://img.shields.io/badge/fnOS-1.1.31xx+-orange.svg)](https://developer.fnnas.com/docs/guide)
-[![9Router](https://img.shields.io/github/v/tag/decolua/9router?label=9Router&color=cyan)](https://github.com/decolua/9router)
+**把上游 [decolua/9router](https://github.com/decolua/9router) 原样打包成飞牛 NAS (fnOS) 应用：纯净上游源码 + fnOS 胶水 + 一处更新检查补丁，无任何功能改动**
 
-> 9Router 免费 AI 路由器的飞牛 NAS (fnOS) 应用包。连接 Claude Code / Codex / Cursor 等工具到 40+ 免费 AI 提供商，RTK 节省 20-40% token，自动 fallback 不中断。
+[![Release](https://img.shields.io/github/v/release/techysy/9router-fnos?label=%E7%89%88%E6%9C%AC&color=2563eb)](https://github.com/techysy/9router-fnos/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/techysy/9router-fnos/total?label=%E4%B8%8B%E8%BD%BD&color=16a34a)](https://github.com/techysy/9router-fnos/releases)
+[![9Router](https://img.shields.io/github/v/tag/decolua/9router?label=%E4%B8%8A%E6%B8%B8&color=cyan)](https://github.com/decolua/9router)
+[![fnOS](https://img.shields.io/badge/fnOS-1.1.31xx+-orange)](https://developer.fnnas.com/docs/guide)
+[![Platform](https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-x86%20%7C%20ARM-6b7280)](#下载)
+[![License](https://img.shields.io/github/license/techysy/9router-fnos?label=%E8%AE%B8%E5%8F%AF&color=f59e0b)](LICENSE)
 
-**9Router for fnOS** 将 [decolua/9router](https://github.com/decolua/9router) 打包为 fnOS 桌面应用，开箱即用。
+[下载](#下载) · [架构](#架构) · [快速开始](#快速开始) · [更新检查](#更新检查) · [从源码构建](#从源码构建) · [项目结构](#项目结构) · [更新日志](CHANGELOG.md)
 
-> 本包基于**修改过的上游 fork**（[techysy/9router](https://github.com/techysy/9router)，含本地增强）从源码构建，**并非纯上游**。在完整上游功能之上，额外包含货币/配额/拓扑等增强（见下方「本项目增强」），并已同步上游至 v0.5.55。
+</div>
 
-- [English README](./README.en.md)
+> **定位**：上游 9Router 的 fnOS 分发渠道。功能层面的定制与增强全部由 [techysy/10router](https://github.com/techysy/10router)（本地优化快照）承载；本仓库只做「上游源码 → fpk」的打包，对源码的**唯一改动**是把仪表盘的更新检查指向本仓库的 Releases（见 [更新检查](#更新检查)）。
 
 ---
 
-## 📦 下载（按架构 + 桌面模式选择）
+## 下载
 
-从 [Releases](https://github.com/techysy/9router-fnos/releases) 下载 fpk：
+从 [**Releases**](https://github.com/techysy/9router-fnos/releases/latest) 下载 fpk，飞牛 **App Center → 手动安装**：
 
-| 版本 | 架构 | 桌面模式 |
-|------|------|---------|
-| `9router-<ver>-x86.fpk` | x86 | 普通（浏览器/新标签页），离线 |
-| `9router-<ver>-iframe-x86.fpk` | x86 | 桌面内嵌，离线 |
-| `9router-<ver>-all.fpk` | x86 / ARM | 普通，在线构建 |
-| `9router-<ver>-iframe-all.fpk` | x86 / ARM | 桌面内嵌，在线构建 |
+| 架构 | 文件名模式 | 说明 |
+| --- | --- | --- |
+| x86 | `9router-<版本>-x86.fpk` | 含完整构建产物，安装免联网 |
+| ARM | `9router-<版本>-arm.fpk` | ARM 架构 |
 
-- **x86 版**：含 node_modules（离线），安装免联网
-- **all 版**：在线构建（装时 `npm install` + `next build`），x86/ARM 通用；首次安装耗时较长，低内存设备建议先加 swap
+> 版本号跟随上游（如上游 `v0.5.91` → 本仓库 Release `v0.5.91`）。上游发新版后重新打包即可，`build.sh` 会自动读取上游 `package.json` 的版本号。
 
-## ✨ 功能亮点
+## 架构
 
-- **一个端点连所有 AI**：Claude Code、Codex、Cursor、Cline 等工具指向 `http://<NAS-IP>:20128/v1` 即接入 40+ 免费提供商
-- **自动 fallback**：某个提供商限流/故障时自动切换，不中断编码
-- **RTK Token 节省**：减少 20-40% token 消耗
-- **多币种成本显示**：成本/定价按界面语言显示本地货币（¥/NT$/¥/₩/₫），可在 Profile 开关切换
-- **配额包按连接独立**：同一提供商配多个连接时，各连接的配额包（如 Bonus Pack）独立显示与隐藏
-- **免费供应商可开关**：noAuth 免费供应商（opencode、MiMo）可在 Provider 页控制是否显示在「使用情况画布」
-- **MiMo Code Free 默认显示**：`mimo-free` 默认在「使用情况画布」显示（不再只一个大 OpenCode 图标），仍可通过 Provider 页开关隐藏/显示
-- **无连接时不暴露全部内置模型**：数据库健康但未配置任何 provider 连接时，`/v1/models` 只返回你显式添加的自定义模型（如 `oc/*-free`），不会把 ~680 个内置模型全部抛给 OpenCode/Cursor 等客户端（上游 [PR #3267](https://github.com/decolua/9router/pull/3267)）
-
-## 🚀 快速安装
-
-1. 从 [Releases](https://github.com/techysy/9router-fnos/releases) 下载 fpk（按架构选，见上方「📦 下载」）
-2. 飞牛 **App Center → 手动安装** → 选择 fpk
-3. 桌面出现 **9Router** 图标，点击打开 Dashboard
-
-## 📖 使用说明
-
-### 接入 AI 工具
-
-```bash
-# CLI 工具（Claude Code / Codex / Cursor / Cline 等）指向 9Router 端点
-# Base URL: http://<NAS-IP>:20128/v1
-# API Key: 在 9Router Dashboard → Endpoint & Key 获取
+```
+decolua/9router (上游源码, 浅克隆)
+        │
+        ▼  patches/update-check-9router-fnos.mjs   ← 唯一改动：更新检查指向本仓库 Releases
+        │
+        ▼  npm install + next build (standalone)
+        │
+        ▼  组装 app/server                          ← standalone + open-sse + src/mitm + 运行时依赖
+        │
+        ▼  叠加 fnOS 胶水                           ← cmd/ 启停回调 · wizard/ 安装向导 · config/ 数据共享 · 图标
+        │
+        ▼  fnpack build                             ← manifest (appname=9router, 端口 20128)
+        │
+        ▼
+9router-<版本>-<arch>.fpk  →  GitHub Release
 ```
 
-Dashboard 里配置 AI 提供商（如 Kiro AI 免费模型）后即可使用。
+仓库内没有上游功能代码——所有「智能路由 / 多格式翻译 / RTK token 节省 / 自动 fallback / 用量仪表盘」能力都来自上游 9Router 本身，详见 [decolua/9router](https://github.com/decolua/9router)。
+
+## 快速开始
+
+1. 从 [Releases](https://github.com/techysy/9router-fnos/releases/latest) 下载 fpk
+2. 飞牛 **App Center → 手动安装** → 选择 fpk
+3. 桌面出现 **9Router** 图标，点击打开 Dashboard
+4. 「Endpoint & Key」页取 API Key，把 Claude Code / Codex / Cursor / Cline 等工具指向 `http://<NAS-IP>:20128/v1`
 
 ### 端口与数据
 
@@ -71,85 +68,66 @@ Dashboard 里配置 AI 提供商（如 Kiro AI 免费模型）后即可使用。
 | 数据目录 | `/vol4/@appdata/9router/` |
 | Node 运行时 | fnOS App Center `nodejs_v24` |
 
-### 🌐 浏览器直接访问
-
-**iframe 版**（桌面内嵌）除了在桌面打开，也可以用**浏览器直接访问**，效果与桌面窗口一致：
+### 浏览器直接访问
 
 | 访问方式 | 地址 |
 |---|---|
 | 内网（局域网） | `http://<NAS-IP>:20128` |
 | 外网（远程） | `http://9route.<fnid>.fnos.net/` |
 
-> 💡 完整体验推荐用电脑/手机浏览器直接访问上述地址。
-
 ### 登录说明
 
-本应用**默认开启登录**（`requireLogin=true`，源码构建默认），首次登录使用初始密码 **`123456`**（已统一，`.env.example` 的 `INITIAL_PASSWORD` 已从开发占位值 `change-me` 改为 `123456`，安装/升级时自动修正）。API 调用仍受 API Key 保护。
+本包默认开启登录，首次登录初始密码为 **`123456`**（由打包胶水 `cmd/main` 写入 `.env`，安装/升级时自动把上游占位值修正为该值）。API 调用仍受 API Key 保护。
 
-### ⚠️ 飞牛移动 App 限制
+> ⚠️ **飞牛移动 App 限制**：移动 App 用 WebView iframe 打开应用，登录 cookie（`SameSite=lax`）无法在容器内保存，会反复跳回登录页；如需在移动容器内使用，可在 Profile → Settings 关闭「Require Login」。完整体验请用电脑/手机浏览器直接访问上述地址。
 
-飞牛移动 App（iOS/Android）用 **WebView iframe** 打开所有应用，存在限制：
+## 更新检查
 
-- **无法登录**：登录 cookie（`SameSite=lax`）无法在容器内保存，会反复跳回登录页。如确需在移动 App 容器内使用，可在 **Profile → Settings** 关闭「Require Login」规避（登录页可关闭）
-- **UI 持久化有限**：`localStorage` / 主题切换在容器内可能不生效（货币功能已合入源码，随构建生效，非运行时补丁）
+对上游源码的唯一改动，由 [`patches/update-check-9router-fnos.mjs`](patches/update-check-9router-fnos.mjs) 在构建时应用：
 
-> 💡 完整体验请用**电脑浏览器**或**手机浏览器**直接访问，见上方「🌐 浏览器直接访问」（内网 `http://<NAS-IP>:20128` / 外网 `http://9route.<fnid>.fnos.net/`）。
-
-## 🔧 本项目增强
-
-相比上游 [decolua/9router](https://github.com/decolua/9router)，本包基于源码额外提供（均已提上游 PR）：
-
-| 增强 | 说明 | 上游 PR |
+| 改动 | 上游行为 | 本包行为 |
 |---|---|---|
-| **多币种成本显示** | 成本/定价按界面语言显示本地货币：中文 ¥、台湾 NT$、日本 ¥、韩国 ₩、越南 ₫，Profile 开关切换 | [#3118](https://github.com/decolua/9router/pull/3118) |
-| **配额包按连接独立** | 同一提供商（如 CodeBuddy CN）配多个连接时，各连接的配额包独立显示/隐藏 | [#3122](https://github.com/decolua/9router/pull/3122) |
-| **免费供应商拓扑开关** | noAuth 免费供应商（opencode、MiMo）可在 Provider 页开关是否显示在「使用情况画布」 | [#3123](https://github.com/decolua/9router/pull/3123) |
-| **Cloudflare 修复** | 修复 Cloudflare 卡片误显示"无连接"（已随上游 v0.5.50 包含） | [#2993](https://github.com/decolua/9router/pull/2993) |
-| **无连接不暴露内置模型** | 数据库健康但无 provider 连接时，`/v1/models` 只返回自定义模型/组合，不 dump 全部 ~680 内置模型 | [#3267](https://github.com/decolua/9router/pull/3267) |
+| `GET /api/version` 的「最新版本」来源 | 查 npm `9router` 包 | 查本仓库 GitHub Releases 的 `tag_name` |
+| 手动更新面板的命令 | `npm i -g 9router@latest` | 指向本仓库 Releases 页下载新 fpk |
 
-这些增强从源码编译进包（`NEXT_DIST_DIR=.next-cli-build npm run build`），构建流程见下方「从源码构建」。
+补丁为精确标记替换：上游源码漂移导致标记缺失时**构建直接失败**（不静默跳过），此时需要人工评估补丁是否需要跟进。
 
-> 📖 **增强与优化详解**：构建来源（fork）、增强清单、fork 同步策略，见 [`docs/enhancements.md`](docs/enhancements.md)
+## 从源码构建
 
-### 📸 效果图
-
-各增强的实际效果图（来自上游 PR 评论），见 [docs/SCREENSHOTS.md](./docs/SCREENSHOTS.md)。
-
-## 🛠️ 从源码构建
-
-> 面向开发者。普通用户直接用 Release 即可。
-> 本包基于**修改过的 fork**（[techysy/9router](https://github.com/techysy/9router)，含本地增强分支）构建，而非纯上游或 npm 包提取。
+在能访问 GitHub 与 fnpack CDN 的 Linux 机器（NAS / x86 构建机）上执行：
 
 ```bash
 git clone https://github.com/techysy/9router-fnos.git
-# 需要 9Router 源码（含增强补丁分支 = fork techysy/9router, 已同步上游 + 本地增强）：
-git clone https://github.com/techysy/9router.git 9router-src
+cd 9router-fnos
 
-cd 9router-src
-npm install
-NEXT_DIST_DIR=.next-cli-build npm run build   # 生成 standalone
-
-# 组装 app/server（把 .next-cli-build/standalone 内容 + custom-server.js 放入 9router-fnos/app/server）
-# 构建 fpk（需在飞牛 NAS 上执行）
-fnpack build
+./build.sh                # 自动版本, x86
+./build.sh 0.5.91 arm     # 指定版本与架构
 ```
 
-## 🐛 问题排查
+依赖：`git`、`node 22+`、`npm`、`curl`；`fnpack` 首次运行自动下载并做 SHA256 校验。产物 `9router-<版本>-<arch>.fpk` 落在仓库根目录。
 
-构建/安装/运行的常见问题与修复，见 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)。
+## 项目结构
 
-## 🔮 迭代计划
+```
+9router-fnos/
+├── build.sh                          # 一键打包：克隆上游 → 补丁 → 构建 → fnpack
+├── patches/
+│   └── update-check-9router-fnos.mjs # 对上游的唯一改动（更新检查重定向）
+├── cmd/                              # fnOS 生命周期回调
+│   ├── main                          #   启动：清 WAL/SHM、写 .env、拉起 server
+│   ├── install_callback / upgrade_callback
+│   └── uninstall_callback / config_callback / ...
+├── app/ui/                           # 桌面图标配置
+├── config/                           # 数据共享声明（/vol4/@appdata/9router）
+├── wizard/                           # 安装向导
+├── manifest                          # fnpack 清单模板（build.sh 生成实际值）
+└── TROUBLESHOOTING.md                # 常见问题排查
+```
 
-等待上游 [decolua/9router](https://github.com/decolua/9router) 发布新版本后重新打包：
-
-- 跟进上游版本更新
-- 上游新增模型自动同步到 Dashboard
-- RTK token 节省算法优化
-
-## 📚 相关项目
+## 相关项目
 
 - [decolua/9router](https://github.com/decolua/9router) — 上游开源项目
-- [Hermes WebUI](https://github.com/techysy/hermes-webui-fnos) · [MetaCubeXD](https://github.com/techysy/metacubexd-fnos) · [Strava Panel](https://github.com/techysy/strava-panel-fnos) — 更多 fnOS 应用
+- [techysy/10router](https://github.com/techysy/10router) — 基于上游 v0.5.55 的本地优化快照（增强版，含多币种、配额包独立、模型目录收敛等）
 - [fnOS 开发者文档](https://developer.fnnas.com/docs/guide)
 
 ## License

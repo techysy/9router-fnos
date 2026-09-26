@@ -2,6 +2,19 @@
 
 ---
 
+## 仓库重定位：纯上游打包（2026-09-27）
+
+### 变更 / Changed
+- **定位收窄为「上游 9Router 的 fnOS 分发渠道」**：构建脚本改回从 `decolua/9router` 纯上游源码打包，对源码的**唯一改动**是 `patches/update-check-9router-fnos.mjs`（仪表盘更新检查从 npm `9router` 改指本仓库 GitHub Releases 的 `tag_name`；手动更新面板指向 fpk 下载页）。此前的内置增强（多币种 / 配额包独立 / 免费供应商开关 / 模型目录收敛等）已全部由 [techysy/10router](https://github.com/techysy/10router) 承载，相关文档（docs/enhancements.md、SCREENSHOTS、论坛帖）随本版移除。
+- **产物改名**：`10router-<ver>-<arch>.fpk` → `9router-<ver>-<arch>.fpk`；manifest/桌面图标/数据共享同步回 9router 身份（端口保持 20128）。
+- **build.sh**：版本号缺省时自动读取上游 package.json；补丁标记缺失时构建失败（不静默跳过）；standalone 补拷清单加 next / better-sqlite3 存在性拷贝。
+
+---
+
+# CHANGELOG / 更新日志
+
+---
+
 ## v0.5.55.2 (2026-08-20)
 
 ### 修复 / Fixed

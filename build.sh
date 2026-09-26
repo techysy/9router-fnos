@@ -20,7 +20,7 @@ set -euo pipefail
 VERSION_ARG="${1:-}"
 ARCH="${2:-x86}"
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
-BUILD_DIR="/tmp/build-9router-fpk-$$"
+BUILD_DIR="${BUILD_DIR:-$HOME/projects/build-9router-fpk-$}"
 FNPACK_VERSION="1.2.1"
 
 # fnpack SHA256 校验
@@ -205,5 +205,9 @@ echo "  构建完成: ${REPO_ROOT}/${OUTPUT_FPK}"
 ls -lh "${REPO_ROOT}/${OUTPUT_FPK}"
 echo "=========================================="
 
+# fnpack 会把包复制到自己的临时目录 —— 落在真实磁盘上，避免 tmpfs 配额打满
+export TMPDIR="${BUILD_DIR}-fnpack-tmp"
+mkdir -p "${TMPDIR}"
+
 # 清理
-rm -rf "${BUILD_DIR}"
+rm -rf "${BUILD_DIR}" "${TMPDIR}"

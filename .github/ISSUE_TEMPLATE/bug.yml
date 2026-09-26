@@ -1,0 +1,80 @@
+name: 🐞 安装 / 运行问题
+description: fpk 装不上、起不来、访问异常等 —— 本仓库自身的打包与胶水问题
+title: "[问题] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **注意本仓库的边界**：这里只负责「上游源码 → fpk」的打包，对源码的唯一改动是更新检查重定向。
+
+        - **功能层面的问题**（路由 / 翻译 / token 节省 / fallback / 仪表盘展示等）来自上游，请提到 [decolua/9router](https://github.com/decolua/9router)
+        - **更完整的功能与分发**（含 Win/mac 客户端、Docker）见 [techysy/10router](https://github.com/techysy/10router)
+        - **飞牛移动 App 容器相关**（WebView iframe 里反复跳登录页、主题不持久化等）属平台限制，**不是本仓库能修的** —— 先看 [TROUBLESHOOTING.md](https://github.com/techysy/9router-fnos/blob/main/TROUBLESHOOTING.md)
+
+  - type: input
+    id: fpk-file
+    attributes:
+      label: 安装的 fpk 文件名
+      description: 务必写全，四个变体行为不同
+      placeholder: 9router-0.5.91-iframe-x86.fpk
+    validations:
+      required: true
+
+  - type: input
+    id: fnos-version
+    attributes:
+      label: fnOS 版本
+      placeholder: 1.1.31xx
+    validations:
+      required: true
+
+  - type: dropdown
+    id: arch
+    attributes:
+      label: NAS 架构
+      options:
+        - x86 (Intel / AMD)
+        - ARM
+        - 不确定
+    validations:
+      required: true
+
+  - type: input
+    id: nas-model
+    attributes:
+      label: 设备型号与内存
+      description: 低内存设备（如 1GB）在线构建容易失败，请务必填写
+      placeholder: 例如 R2S / 4GB
+    validations:
+      required: false
+
+  - type: textarea
+    id: symptom
+    attributes:
+      label: 现象
+      description: 尽量具体 —— 什么操作、期望什么、实际发生什么
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志
+      description: |
+        优先贴 `install.log`，其次 `9router.log`。数据目录通常是 `/volX/@appdata/9router/`。
+
+        ```bash
+        tail -n 100 /volX/@appdata/9router/install.log
+        ```
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 已尝试的排查
+      description: 是否已按 TROUBLESHOOTING.md 逐条试过？结果如何？
+    validations:
+      required: false

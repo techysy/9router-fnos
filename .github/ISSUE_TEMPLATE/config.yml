@@ -1,0 +1,19 @@
+# 关闭「空白 issue」入口，所有来件必须走模板 —— 避免「求更新」类内容散落成无上下文的裸标题。
+blank_issues_enabled: false
+
+contact_links:
+  - name: 📦 先看最新 Release（版本号跟随上游，多半已经发布）
+    url: https://github.com/techysy/9router-fnos/releases/latest
+    about: 下载 fpk、查看当前版本与架构变体。请求更新前请先确认这里没有你要的版本。
+
+  - name: 🚀 10Router —— 功能更全的分发（含 Windows / macOS 客户端）
+    url: https://github.com/techysy/10router
+    about: 功能层面的迭代都在这边。同时提供 Windows 安装/便携版、macOS dmg、Docker 镜像与 npm 包，以及 fnOS 的完整 fpk 矩阵。
+
+  - name: 🔧 安装 / 运行问题先查 TROUBLESHOOTING
+    url: https://github.com/techysy/9router-fnos/blob/main/TROUBLESHOOTING.md
+    about: 在线构建失败、服务起不来、移动 App 容器内无法登录等常见问题的排查与规避方式。
+
+  - name: ⬆️ 上游 9Router（功能问题请提到这里）
+    url: https://github.com/decolua/9router/issues
+    about: 路由、翻译、token 节省、fallback、仪表盘等能力均来自上游源码，本仓库不改功能。

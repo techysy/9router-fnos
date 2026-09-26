@@ -183,11 +183,14 @@ find "${BUILD_DIR}" -type l -not -path '*/.git/*' -delete 2>/dev/null || true
 # ── 10. 下载并校验 fnpack ──
 echo ""
 echo "[9/9] 下载 fnpack + 构建 fpk..."
-if [ ! -x "/usr/local/bin/fnpack" ]; then
-    curl -fsSL -o /usr/local/bin/fnpack "https://static2.fnnas.com/fnpack/${FNPACK_BIN}"
-    echo "${FNPACK_SHA256}  /usr/local/bin/fnpack" | sha256sum -c -
-    chmod +x /usr/local/bin/fnpack
+FNPACK_DIR="${FNPACK_DIR:-$HOME/.local/bin}"
+mkdir -p "${FNPACK_DIR}"
+if [ ! -x "${FNPACK_DIR}/fnpack" ]; then
+    curl -fsSL -o "${FNPACK_DIR}/fnpack" "https://static2.fnnas.com/fnpack/${FNPACK_BIN}"
+    echo "${FNPACK_SHA256}  ${FNPACK_DIR}/fnpack" | sha256sum -c -
+    chmod +x "${FNPACK_DIR}/fnpack"
 fi
+export PATH="${FNPACK_DIR}:${PATH}"
 
 cd "${BUILD_DIR}"
 fnpack build -d .

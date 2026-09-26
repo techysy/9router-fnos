@@ -4,27 +4,32 @@
 # 用法:
 #   ./build.sh [VERSION] [ARCH]
 # 示例:
-#   ./build.sh 0.5.91 x86      # 构建 x86 fpk（版本号缺省时自动读上游 package.json）
-#   ./build.sh 0.5.91 arm      # 构建 arm fpk
-#   ./build.sh                 # 自动版本, x86
+#   ./build.sh 0.5.91 x86      # 仅离线 x86（版本号缺省时自动读上游 package.json）
+#   ./build.sh                 # 自动版本, 四变体全打
+#
+# ARCH 参数保留兼容：给定时只打该架构的离线变体；缺省打全部四个变体
+#   9router-<v>-x86.fpk          离线（内置构建产物），浏览器打开
+#   9router-<v>-iframe-x86.fpk   离线，桌面内嵌
+#   9router-<v>-all.fpk          在线构建（内置源码树），浏览器打开, x86/ARM 通用
+#   9router-<v>-iframe-all.fpk   在线构建，桌面内嵌, x86/ARM 通用
 #
 # 对上游源码的唯一改动 = patches/update-check-9router-fnos.mjs（更新检查指向本仓库
 # Releases），其余逐字节保持上游原样。
 #
-# 前置依赖: git, node 22+, npm, curl, fnpack (脚本会自动下载 fnpack)
+# 前置依赖: git, node 22+, npm, curl, fnpack (脚本会自动下载到 ~/.local/bin)
 #
-# 输出: 9router-<VERSION>-<ARCH>.fpk (放在 repo 根目录)
+# 输出: 9router-<VERSION>[-iframe][-x86|all].fpk (放在 repo 根目录)
 
 set -euo pipefail
 
 VERSION_ARG="${1:-}"
-ARCH="${2:-x86}"
+ARCH_ARG="${2:-}"
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
-BUILD_DIR="${BUILD_DIR:-$HOME/projects/build-9router-fpk-$}"
+BUILD_DIR="${BUILD_DIR:-$HOME/projects/build-9router-fpk-$$}"
 FNPACK_VERSION="1.2.1"
 
 # fnpack SHA256 校验
-if [ "$ARCH" = "arm" ]; then
+if [ "$ARCH_ARG" = "arm" ]; then
     FNPACK_BIN="fnpack-${FNPACK_VERSION}-linux-arm64"
     FNPACK_SHA256="aad9e16b101267d30017f39ab969e3c085fbce209716f8bd3b1e167eaf15e0cf"
 else
@@ -34,7 +39,7 @@ fi
 
 echo "=========================================="
 echo "  9Router fnOS fpk 构建"
-echo "  Arch:    ${ARCH}"
+echo "  Arch:    ${ARCH_ARG:-x86+all}"
 echo "=========================================="
 
 # ── 1. 清理并创建构建目录 ──
@@ -73,52 +78,50 @@ else
 fi
 echo "  Version: ${VERSION}"
 
-# ── 5. 组装 app/server ──
-echo ""
-echo "[4/9] 组装 app/server..."
-mkdir -p "${BUILD_DIR}/app/server"
+# ── 5. 组装四个变体（x86/all × url/iframe）──
+# 每个变体独立 staging 目录；fnpack build -d . 打包当前目录。
+pack_variant() {
+    MODE="$1"   # x86（离线，内置构建产物） | all（在线构建，内置源码树）
+    UI="$2"     # url | iframe
+    local STAGE="${BUILD_DIR}/pack-${UI}-${MODE}"
+    rm -rf "${STAGE}"; mkdir -p "${STAGE}/app"
 
-# Next.js standalone 输出
-cp -r "${STANDALONE}/." "${BUILD_DIR}/app/server/"
-
-# custom-server.js (已在 postbuild 时拷贝到 standalone, 此处为兜底)
-if [ -f "custom-server.js" ] && [ ! -f "${BUILD_DIR}/app/server/custom-server.js" ]; then
-    cp custom-server.js "${BUILD_DIR}/app/server/"
-fi
-
-# open-sse 路由引擎 (Next tracing 不包含, 需手动补拷)
-cp -r open-sse "${BUILD_DIR}/app/server/"
-
-# src/mitm (MITM 功能)
-cp -r src/mitm "${BUILD_DIR}/app/server/"
-
-# 原生模块 / tracing 不含的运行时依赖（存在才拷）
-mkdir -p "${BUILD_DIR}/app/server/node_modules"
-for pkg in node-forge sql.js next better-sqlite3; do
-    if [ -d "node_modules/${pkg}" ]; then
-        cp -r "node_modules/${pkg}" "${BUILD_DIR}/app/server/node_modules/"
+    # server 内容
+    if [ "${MODE}" = "x86" ]; then
+        mkdir -p "${STAGE}/app/server"
+        cp -r "${STANDALONE}/." "${STAGE}/app/server/"
+        if [ -f "custom-server.js" ] && [ ! -f "${STAGE}/app/server/custom-server.js" ]; then
+            cp custom-server.js "${STAGE}/app/server/"
+        fi
+        cp -r open-sse "${STAGE}/app/server/"
+        cp -r src/mitm "${STAGE}/app/server/"
+        # 原生模块 / tracing 不含的运行时依赖（存在才拷）
+        mkdir -p "${STAGE}/app/server/node_modules"
+        for pkg in node-forge sql.js next better-sqlite3; do
+            [ -d "node_modules/${pkg}" ] && cp -r "node_modules/${pkg}" "${STAGE}/app/server/node_modules/" || true
+        done
+        PLATFORM="x86"
+    else
+        # 源码树（排除 .git / node_modules / 构建产物），装时在线 npm install + build
+        mkdir -p "${STAGE}/app/server"
+        (tar -C . --exclude=./.git --exclude=./node_modules --exclude=./.next --exclude=./.next-cli-build -cf - .) | tar -C "${STAGE}/app/server" -xf -
+        PLATFORM="all"
     fi
-done
 
-# ── 6. 复制 fnOS 打包结构 ──
-echo ""
-echo "[5/9] 复制 fnOS 打包结构..."
-cp -r "${REPO_ROOT}/cmd" "${BUILD_DIR}/"
-cp -r "${REPO_ROOT}/app/ui" "${BUILD_DIR}/app/"
-cp -r "${REPO_ROOT}/config" "${BUILD_DIR}/"
-cp -r "${REPO_ROOT}/wizard" "${BUILD_DIR}/"
-cp "${REPO_ROOT}/ICON.PNG" "${BUILD_DIR}/"
-cp "${REPO_ROOT}/ICON_256.PNG" "${BUILD_DIR}/"
+    # fnOS 胶水 + 图标
+    cp -r "${REPO_ROOT}/cmd" "${STAGE}/"
+    cp -r "${REPO_ROOT}/app/ui" "${STAGE}/app/"
+    cp -r "${REPO_ROOT}/config" "${STAGE}/"
+    cp -r "${REPO_ROOT}/wizard" "${STAGE}/"
+    cp "${REPO_ROOT}/ICON.PNG" "${REPO_ROOT}/ICON_256.PNG" "${STAGE}/"
 
-# ── 7. 生成 manifest ──
-echo ""
-echo "[6/9] 生成 manifest..."
-cat > "${BUILD_DIR}/manifest" <<EOF
+    # manifest
+    cat > "${STAGE}/manifest" <<EOF
 appname               = 9router
 version               = ${VERSION}
 display_name          = 9Router
 desc                  = FREE AI Router & Token Saver - AI 编码路由器（上游 9Router，端口 20128）
-platform              = ${ARCH}
+platform              = ${PLATFORM}
 source                = thirdparty
 maintainer            = decolua
 maintainer_url        = https://github.com/decolua/9router
@@ -131,16 +134,15 @@ ctl_stop              = true
 install_dep_apps      = nodejs_v24
 EOF
 
-# ── 8. 更新 app/ui/config ──
-echo ""
-echo "[7/9] 更新 UI 配置..."
-cat > "${BUILD_DIR}/app/ui/config" <<'EOF'
+    # ui/config：url（浏览器打开）| iframe（桌面内嵌）
+    write_ui_config() {
+        cat > "${STAGE}/app/ui/config" <<EOF
 {
   ".url": {
     "9router.Application": {
       "title": "9Router",
       "icon": "images/icon_{0}.png",
-      "type": "url",
+      "type": "$1",
       "protocol": "http",
       "port": "20128",
       "url": "/",
@@ -149,9 +151,11 @@ cat > "${BUILD_DIR}/app/ui/config" <<'EOF'
   }
 }
 EOF
+    }
+    write_ui_config "${UI}"
 
-# 更新 config/resource (数据共享)
-cat > "${BUILD_DIR}/config/resource" <<'EOF'
+    # 数据共享
+    cat > "${STAGE}/config/resource" <<'EOF'
 {
     "data-share":
     {
@@ -175,14 +179,18 @@ cat > "${BUILD_DIR}/config/resource" <<'EOF'
 }
 EOF
 
-# ── 9. 清理符号链接 ──
-echo ""
-echo "[8/9] 清理符号链接..."
-find "${BUILD_DIR}" -type l -not -path '*/.git/*' -delete 2>/dev/null || true
+    echo "  packing ${UI}-${MODE} ..."
+    cd "${STAGE}"
+    fnpack build -d . >/dev/null
+    local SUFFIX=""
+    [ "${UI}" = "iframe" ] && SUFFIX="-iframe"
+    mv 9router.fpk "${REPO_ROOT}/9router-${VERSION}${SUFFIX}-${MODE}.fpk"
+    cd "${BUILD_DIR}/upstream"
+}
 
-# ── 10. 下载并校验 fnpack ──
+# ── 6. 下载并校验 fnpack ──
 echo ""
-echo "[9/9] 下载 fnpack + 构建 fpk..."
+echo "[4/9] 下载 fnpack..."
 FNPACK_DIR="${FNPACK_DIR:-$HOME/.local/bin}"
 mkdir -p "${FNPACK_DIR}"
 if [ ! -x "${FNPACK_DIR}/fnpack" ]; then
@@ -192,22 +200,34 @@ if [ ! -x "${FNPACK_DIR}/fnpack" ]; then
 fi
 export PATH="${FNPACK_DIR}:${PATH}"
 
-cd "${BUILD_DIR}"
-fnpack build -d .
-
-# ── 11. 输出 ──
-OUTPUT_FPK="9router-${VERSION}-${ARCH}.fpk"
-mv 9router.fpk "${REPO_ROOT}/${OUTPUT_FPK}"
-
+# ── 7. 打变体 ──
 echo ""
-echo "=========================================="
-echo "  构建完成: ${REPO_ROOT}/${OUTPUT_FPK}"
-ls -lh "${REPO_ROOT}/${OUTPUT_FPK}"
-echo "=========================================="
-
+echo "[5/9] 打包变体..."
 # fnpack 会把包复制到自己的临时目录 —— 落在真实磁盘上，避免 tmpfs 配额打满
 export TMPDIR="${BUILD_DIR}-fnpack-tmp"
 mkdir -p "${TMPDIR}"
 
-# 清理
+if [ -n "${ARCH_ARG}" ]; then
+    # 兼容旧行为：显式给架构 = 只打该架构离线包
+    pack_variant "${ARCH_ARG}" url
+else
+    pack_variant x86  url
+    pack_variant x86  iframe
+    pack_variant all  url
+    pack_variant all  iframe
+fi
+
+echo ""
+echo "[6/9] 产物："
+ls -lh "${REPO_ROOT}"/9router-*.fpk
+
+# ── 8. 清理 ──
+echo ""
+echo "[7/9] 清理..."
 rm -rf "${BUILD_DIR}" "${TMPDIR}"
+
+echo ""
+echo "=========================================="
+echo "  构建完成"
+ls -lh "${REPO_ROOT}"/9router-*.fpk
+echo "=========================================="

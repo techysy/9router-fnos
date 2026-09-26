@@ -25,10 +25,15 @@
 
 从 [**Releases**](https://github.com/techysy/9router-fnos/releases/latest) 下载 fpk，飞牛 **App Center → 手动安装**：
 
-| 架构 | 文件名模式 | 说明 |
-| --- | --- | --- |
-| x86 | `9router-<版本>-x86.fpk` | 含完整构建产物，安装免联网 |
-| ARM | `9router-<版本>-arm.fpk` | ARM 架构 |
+| 版本 | 架构 | 桌面模式 |
+|------|------|---------|
+| `9router-<版本>-x86.fpk` | x86 | 普通（浏览器打开），离线 |
+| `9router-<版本>-iframe-x86.fpk` | x86 | 桌面内嵌，离线 |
+| `9router-<版本>-all.fpk` | x86/ARM | 普通，在线构建 |
+| `9router-<版本>-iframe-all.fpk` | x86/ARM | 桌面内嵌，在线构建 |
+
+- **x86 版**：含构建产物与运行时依赖，安装免联网
+- **all 版**：内置上游源码树，安装时在 NAS 上 `npm install + next build`，x86/ARM 通用；首次安装耗时较长，低内存设备建议先加 swap
 
 > 版本号跟随上游（如上游 `v0.5.91` → 本仓库 Release `v0.5.91`）。上游发新版后重新打包即可，`build.sh` 会自动读取上游 `package.json` 的版本号。
 

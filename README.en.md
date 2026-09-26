@@ -13,6 +13,15 @@
 - Build: `./build.sh [version] [x86|arm]` — clones upstream, applies `patches/update-check-9router-fnos.mjs`, builds the standalone bundle, packs the fpk.
 - 中文文档：[README.md](./README.md)
 
+## Architecture
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/architecture.svg">
+  <img src="docs/architecture.svg" alt="9Router for fnOS architecture: upstream source → the single update-check patch → standalone build → fnOS glue overlaid → fnpack packs four fpk variants (x86 / iframe-x86 / all / iframe-all). At runtime on the NAS: desktop icon → Dashboard on port 20128 → fnOS runtime glue (cmd/) → Node.js nodejs_v24 → persistent data dir /volX/@appdata/9router/ → upstream 9Router features (smart routing, format translation, RTK token saving, automatic fallback, usage dashboard)." width="1080">
+</picture>
+
+Source: [`docs/architecture.svg`](docs/architecture.svg) — a single SVG that follows GitHub's light/dark theme automatically.
+
 ## License
 
 MIT — same as [decolua/9router](https://github.com/decolua/9router)

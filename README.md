@@ -39,6 +39,14 @@
 
 ## 架构
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/architecture.svg">
+  <img src="docs/architecture.svg" alt="9Router for fnOS 架构总览：上游源码 → 唯一补丁 → standalone 构建 → 叠加 fnOS 胶水 → fnpack 打包出四个 fpk 变体（x86 / iframe-x86 / all / iframe-all）；在飞牛 NAS 上运行时为 桌面图标 → Dashboard(20128) → fnOS 运行时胶水 → Node.js nodejs_v24 → /volX/@appdata/9router/ 数据目录 → 上游 9Router 能力（智能路由 / 多格式翻译 / RTK token 节省 / 自动 fallback / 用量仪表盘）" width="1080">
+</picture>
+
+<details>
+<summary>文字版流程图</summary>
+
 ```
 decolua/9router (上游源码, 浅克隆)
         │
@@ -56,7 +64,11 @@ decolua/9router (上游源码, 浅克隆)
 9router-<版本>-<arch>.fpk  →  GitHub Release
 ```
 
+</details>
+
 仓库内没有上游功能代码——所有「智能路由 / 多格式翻译 / RTK token 节省 / 自动 fallback / 用量仪表盘」能力都来自上游 9Router 本身，详见 [decolua/9router](https://github.com/decolua/9router)。
+
+> 图源：[`docs/architecture.svg`](docs/architecture.svg)（纯 SVG，跟随 GitHub 深浅色主题自动切换，可点击查看原图）
 
 ## 快速开始
 

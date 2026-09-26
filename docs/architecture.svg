@@ -1,0 +1,298 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1120" width="1080" height="1120" role="img" aria-labelledby="t d" font-family="ui-sans-serif, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Roboto, Helvetica, Arial, sans-serif">
+  <title id="t">9Router for fnOS — 构建与运行架构</title>
+  <desc id="d">从上游 decolua/9router 源码出发，经唯一补丁、standalone 构建、fnOS 胶水叠加、fnpack 打包，产出四个 fpk 变体；右列为安装后在飞牛 NAS 上的运行时分层。</desc>
+
+  <!-- ── 主题变量：GitHub 原生双主题（跟随 <picture> 的 media 查询 + 独立打开时跟随系统） ── -->
+  <style>
+    svg {
+      --bg:         #ffffff;
+      --panel:      #f6f8fa;
+      --panel-2:    #eef2f6;
+      --card:       #ffffff;
+      --border:     #d0d7de;
+      --text:       #1f2328;
+      --muted:      #59636e;
+      --faint:      #818b98;
+
+      --build:      #0969da;
+      --build-bg:   #ddf4ff;
+      --pack:       #6f42c1;
+      --pack-bg:    #f3eefe;
+      --runtime:    #1a7f37;
+      --runtime-bg: #dafbe1;
+      --down:       #7d4e00;
+      --down-bg:    #fff8c5;
+      --glue:       #bc4c00;
+      --glue-bg:    #fff1e5;
+      --patch:      #cf222e;
+      --patch-bg:   #fff0ef;
+
+      --line:       #8c959f;
+      --line-soft:  #d0d7de;
+      --arrow:      #59636e;
+      --shadow:     0 1px 0 rgba(31,35,40,.04), 0 1px 3px rgba(31,35,40,.06);
+    }
+    @media (prefers-color-scheme: dark) {
+      svg {
+        --bg:         #0d1117;
+        --panel:      #161b22;
+        --panel-2:    #1c2129;
+        --card:       #161b22;
+        --border:     #30363d;
+        --text:       #e6edf3;
+        --muted:      #9198a1;
+        --faint:      #6e7681;
+
+        --build:      #79c0ff;
+        --build-bg:   #0b2a45;
+        --pack:       #d2a8ff;
+        --pack-bg:    #2b1e45;
+        --runtime:    #7ee787;
+        --runtime-bg: #102e1a;
+        --down:       #e3b341;
+        --down-bg:    #33270a;
+        --glue:       #ffa657;
+        --glue-bg:    #3a2210;
+        --patch:      #ff7b72;
+        --patch-bg:   #3d1416;
+
+        --line:       #6e7681;
+        --line-soft:  #30363d;
+        --arrow:      #9198a1;
+        --shadow:     0 1px 3px rgba(0,0,0,.4);
+      }
+    }
+
+    .box    { fill: var(--card); stroke: var(--border); stroke-width: 1.2; }
+    .lane   { fill: var(--panel); stroke: var(--border); stroke-width: 1; }
+    .lbl    { fill: var(--text); font-size: 15px; font-weight: 600; }
+    .sub    { fill: var(--muted); font-size: 12.5px; }
+    .tiny   { fill: var(--faint); font-size: 11.5px; }
+    .mono   { font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace; }
+    .colhd  { fill: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .title  { fill: var(--text); font-size: 21px; font-weight: 700; }
+    .chip   { font-size: 11.5px; font-weight: 600; }
+
+    .flow     { stroke: var(--arrow); stroke-width: 1.8; fill: none; }
+    .flow-p   { stroke: var(--patch); stroke-width: 1.8; fill: none; }
+    .flow-g   { stroke: var(--glue);  stroke-width: 1.8; fill: none; }
+    .edge     { stroke: var(--line-soft); stroke-width: 1.2; fill: none; stroke-dasharray: 3 4; }
+    .arrow    { fill: var(--arrow); }
+    .arrow-p  { fill: var(--patch); }
+    .arrow-g  { fill: var(--glue); }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="arrow" d="M0,1 L10,5 L0,9 z"/>
+    </marker>
+    <marker id="ahp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="arrow-p" d="M0,1 L10,5 L0,9 z"/>
+    </marker>
+    <marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="arrow-g" d="M0,1 L10,5 L0,9 z"/>
+    </marker>
+  </defs>
+
+  <rect width="1080" height="1120" fill="var(--bg)"/>
+
+  <!-- ── 标题栏 ── -->
+  <text class="title" x="36" y="46">9Router for fnOS — 架构总览</text>
+  <text class="sub"   x="36" y="69">纯上游打包：decolua/9router 源码 → 四个 fpk 变体 → 飞牛 NAS 运行时（端口 20128）</text>
+  <line x1="36" y1="88" x2="1044" y2="88" stroke="var(--border)" stroke-width="1"/>
+
+  <!-- ── 列标题 ── -->
+  <text class="colhd" x="520" y="118" text-anchor="end">构建期 · 在构建机 / NAS 上</text>
+  <text class="colhd" x="576" y="118" text-anchor="start">运行期 · 在飞牛 NAS 上</text>
+  <rect x="36" y="130" width="470" height="954" rx="14" class="lane"/>
+  <rect x="566" y="130" width="478" height="954" rx="14" class="lane"/>
+
+  <!-- ═══════════ 左列：构建流水线 ═══════════ -->
+
+  <!-- 1. 上游源码 -->
+  <rect x="60" y="158" width="422" height="80" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="60" y="158" width="4" height="80" rx="2" fill="var(--build)"/>
+  <text class="lbl" x="82" y="187">① 上游源码</text>
+  <text class="sub mono" x="82" y="208">git clone --depth 1 decolua/9router</text>
+  <text class="tiny" x="82" y="226">浅克隆，构建期始终拉取最新 tag</text>
+
+  <!-- 2. 唯一补丁 -->
+  <rect x="60" y="264" width="422" height="94" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="60" y="264" width="4" height="94" rx="2" fill="var(--patch)"/>
+  <text class="lbl" x="82" y="293">② 唯一改动 <tspan class="chip" fill="var(--patch)">patches/</tspan></text>
+  <text class="sub mono" x="82" y="314">update-check-9router-fnos.mjs</text>
+  <text class="tiny" x="82" y="332">/api/version 查本仓库 Releases 而非 npm；</text>
+  <text class="tiny" x="82" y="348">标记缺失即构建失败（不静默跳过）</text>
+
+  <!-- 3. 构建 standalone -->
+  <rect x="60" y="384" width="422" height="88" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="60" y="384" width="4" height="88" rx="2" fill="var(--build)"/>
+  <text class="lbl" x="82" y="413">③ 构建 standalone</text>
+  <text class="sub mono" x="82" y="434">npm install + next build</text>
+  <text class="tiny mono" x="82" y="454">NEXT_DIST_DIR=.next-cli-build → standalone/</text>
+
+  <!-- 4. 组装 server -->
+  <rect x="60" y="498" width="422" height="96" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="60" y="498" width="4" height="96" rx="2" fill="var(--build)"/>
+  <text class="lbl" x="82" y="527">④ 组装 app/server</text>
+  <text class="tiny" x="82" y="548">standalone/ + open-sse/ + src/mitm/</text>
+  <text class="tiny mono" x="82" y="566">+ next · better-sqlite3 · sql.js</text>
+  <text class="tiny mono" x="82" y="582">+ node-forge</text>
+
+  <!-- 5. 叠加 fnOS 胶水 -->
+  <rect x="60" y="620" width="422" height="122" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="60" y="620" width="4" height="122" rx="2" fill="var(--glue)"/>
+  <text class="lbl" x="82" y="649">⑤ 叠加 fnOS 胶水 <tspan class="tiny">（本仓库代码）</tspan></text>
+  <text class="tiny mono" x="82" y="671">cmd/main          启停 / 健康检查 / .env</text>
+  <text class="tiny mono" x="82" y="689">cmd/install|upgrade_callback   在线构建</text>
+  <text class="tiny mono" x="82" y="707">wizard/install · config/resource · app/ui</text>
+  <text class="tiny" x="82" y="727">数据共享声明 + 桌面图标 + MIT 向导页</text>
+
+  <!-- 6. fnpack build -->
+  <rect x="60" y="768" width="422" height="76" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="60" y="768" width="4" height="76" rx="2" fill="var(--pack)"/>
+  <text class="lbl" x="82" y="797">⑥ fnpack build</text>
+  <text class="tiny" x="82" y="818">生成 manifest：appname=9router</text>
+  <text class="tiny mono" x="82" y="834">service_port=20128 · nodejs_v24</text>
+
+  <!-- 7. 四个变体 -->
+  <rect x="60" y="870" width="422" height="184" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="60" y="870" width="4" height="184" rx="2" fill="var(--pack)"/>
+  <text class="lbl" x="82" y="899">⑦ 四个变体 → GitHub Release</text>
+
+  <rect x="82" y="912" width="186" height="60" rx="8" fill="var(--panel-2)" stroke="var(--border)"/>
+  <text class="tiny" x="94" y="933" font-weight="600" fill="var(--text)">x86</text>
+  <text class="tiny mono" x="94" y="951">离线 · 内置产物</text>
+  <text class="tiny" x="94" y="966">浏览器打开</text>
+
+  <rect x="278" y="912" width="186" height="60" rx="8" fill="var(--panel-2)" stroke="var(--border)"/>
+  <text class="tiny" x="290" y="933" font-weight="600" fill="var(--text)">iframe-x86</text>
+  <text class="tiny mono" x="290" y="951">离线 · 内置产物</text>
+  <text class="tiny" x="290" y="966">桌面内嵌</text>
+
+  <rect x="82" y="982" width="186" height="60" rx="8" fill="var(--panel-2)" stroke="var(--border)"/>
+  <text class="tiny" x="94" y="1003" font-weight="600" fill="var(--text)">all</text>
+  <text class="tiny mono" x="94" y="1021">在线 · 内置源码树</text>
+  <text class="tiny" x="94" y="1036">x86 / ARM · 浏览器</text>
+
+  <rect x="278" y="982" width="186" height="60" rx="8" fill="var(--panel-2)" stroke="var(--border)"/>
+  <text class="tiny" x="290" y="1003" font-weight="600" fill="var(--text)">iframe-all</text>
+  <text class="tiny mono" x="290" y="1021">在线 · 内置源码树</text>
+  <text class="tiny" x="290" y="1036">x86 / ARM · 桌面内嵌</text>
+
+  <text class="tiny" x="82" y="1058" font-style="italic">— 或 —  从 Release 下载 .fpk，App Center 手动安装 / 升级</text>
+
+  <!-- ── 左列纵向流程箭头 ── -->
+  <path class="flow" d="M271,238 L271,264" marker-end="url(#ah)"/>
+  <path class="flow" d="M271,358 L271,384" marker-end="url(#ah)"/>
+  <path class="flow" d="M271,472 L271,498" marker-end="url(#ah)"/>
+  <path class="flow" d="M271,594 L271,620" marker-end="url(#ah)"/>
+  <path class="flow" d="M271,742 L271,768" marker-end="url(#ah)"/>
+  <path class="flow" d="M271,844 L271,870" marker-end="url(#ah)"/>
+
+  <!-- 补丁高亮支线：② → ③ -->
+  <path class="flow-p" d="M482,311 C508,311 508,420 482,420" marker-end="url(#ahp)"/>
+  <text class="tiny" x="516" y="352" fill="var(--patch)" font-weight="600" text-anchor="middle">patch</text>
+  <text class="tiny" x="516" y="368" fill="var(--patch)" text-anchor="middle">构建前</text>
+  <text class="tiny" x="516" y="384" fill="var(--patch)" text-anchor="middle">应用</text>
+
+  <!-- 跨列主流程：⑥ → 运行时（安装） -->
+  <path class="flow" d="M482,806 C534,806 534,320 566,320" marker-end="url(#ah)" stroke-dasharray="7 5"/>
+  <rect x="494" y="546" width="66" height="20" rx="10" fill="var(--down-bg)" stroke="var(--border)"/>
+  <text class="chip" x="527" y="560" text-anchor="middle" fill="var(--down)">安装</text>
+
+  <!-- ═══════════ 右列：运行期分层 ═══════════ -->
+
+  <!-- 桌面 / 客户端 -->
+  <rect x="590" y="158" width="430" height="86" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="590" y="158" width="4" height="86" rx="2" fill="var(--runtime)"/>
+  <text class="lbl" x="612" y="187">桌面 / 客户端</text>
+  <text class="tiny" x="612" y="208">飞牛桌面图标（url 或 iframe 内嵌模式）</text>
+  <text class="tiny mono" x="612" y="228">浏览器 · Claude Code · Codex · Cursor · Cline</text>
+
+  <!-- Dashboard -->
+  <rect x="590" y="278" width="430" height="84" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="590" y="278" width="4" height="84" rx="2" fill="var(--runtime)"/>
+  <text class="lbl" x="612" y="307">9Router Dashboard / API</text>
+  <text class="tiny mono" x="612" y="328">:20128  ·  /api/health · /api/version</text>
+  <text class="tiny mono" x="612" y="346">OpenAI 兼容入口：/v1</text>
+
+  <!-- 运行时胶水 -->
+  <rect x="590" y="396" width="430" height="120" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="590" y="396" width="4" height="120" rx="2" fill="var(--glue)"/>
+  <text class="lbl" x="612" y="425">fnOS 运行时胶水 <tspan class="tiny">（cmd/）</tspan></text>
+  <text class="tiny mono" x="612" y="447">main      启动前清 SQLite WAL/SHM 残留</text>
+  <text class="tiny mono" x="612" y="465">main      写 .env（INITIAL_PASSWORD）</text>
+  <text class="tiny mono" x="612" y="483">main      nohup node custom-server.js</text>
+  <text class="tiny mono" x="612" y="501">callbacks 安装/升级时按需在线构建</text>
+
+  <!-- Node 运行时 -->
+  <rect x="590" y="552" width="430" height="72" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="590" y="552" width="4" height="72" rx="2" fill="var(--build)"/>
+  <text class="lbl" x="612" y="581">Node.js 运行时</text>
+  <text class="tiny mono" x="612" y="602">fnOS App Center 依赖：nodejs_v24</text>
+  <text class="tiny" x="612" y="617">--max-old-space-size=4096</text>
+
+  <!-- 数据目录 -->
+  <rect x="590" y="660" width="430" height="120" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="590" y="660" width="4" height="120" rx="2" fill="var(--down)"/>
+  <text class="lbl" x="612" y="689">数据目录（持久化）</text>
+  <text class="tiny mono" x="612" y="711">/volX/@appdata/9router/</text>
+  <text class="tiny mono" x="612" y="731">db/data.sqlite   路由与用量数据</text>
+  <text class="tiny mono" x="612" y="749">9router.log · 9router.pid</text>
+  <text class="tiny" x="612" y="768">由 config/resource 声明为共享目录（rw）</text>
+
+  <!-- 上游能力 -->
+  <rect x="590" y="816" width="430" height="238" rx="10" class="box" style="filter:drop-shadow(var(--shadow))"/>
+  <rect x="590" y="816" width="4" height="238" rx="2" fill="var(--runtime)"/>
+  <text class="lbl" x="612" y="845">上游 9Router 能力</text>
+  <text class="tiny" x="612" y="866">本仓库不含任何功能代码，全部来自上游源码</text>
+
+  <rect x="612" y="882" width="182" height="44" rx="8" fill="var(--panel-2)" stroke="var(--border)"/>
+  <text class="tiny" x="624" y="901" fill="var(--text)" font-weight="600">智能路由</text>
+  <text class="tiny" x="624" y="917">多供应商自动选路</text>
+
+  <rect x="814" y="882" width="182" height="44" rx="8" fill="var(--panel-2)" stroke="var(--border)"/>
+  <text class="tiny" x="824" y="901" fill="var(--text)" font-weight="600">多格式翻译</text>
+  <text class="tiny" x="824" y="917">Anthropic ↔ OpenAI</text>
+
+  <rect x="612" y="938" width="182" height="44" rx="8" fill="var(--panel-2)" stroke="var(--border)"/>
+  <text class="tiny" x="624" y="957" fill="var(--text)" font-weight="600">RTK token 节省</text>
+  <text class="tiny" x="624" y="973">压缩上下文开销</text>
+
+  <rect x="814" y="938" width="182" height="44" rx="8" fill="var(--panel-2)" stroke="var(--border)"/>
+  <text class="tiny" x="824" y="957" fill="var(--text)" font-weight="600">自动 fallback</text>
+  <text class="tiny" x="824" y="973">失败自动换供应商</text>
+
+  <rect x="612" y="994" width="384" height="44" rx="8" fill="var(--panel-2)" stroke="var(--border)"/>
+  <text class="tiny" x="624" y="1013" fill="var(--text)" font-weight="600">用量仪表盘</text>
+  <text class="tiny" x="624" y="1029">请求日志 · 配额 · 成本统计（数据存于上面的数据目录）</text>
+
+  <!-- ── 右列纵向流程箭头 ── -->
+  <path class="flow" d="M805,244 L805,278" marker-end="url(#ah)"/>
+  <path class="flow" d="M805,362 L805,396" marker-end="url(#ah)"/>
+  <path class="flow" d="M805,516 L805,552" marker-end="url(#ah)"/>
+  <path class="flow" d="M805,624 L805,660" marker-end="url(#ah)"/>
+  <path class="flow" d="M805,780 L805,816" marker-end="url(#ah)"/>
+
+  <!-- ── 底部图例 ── -->
+  <line x1="36" y1="1100" x2="1044" y2="1100" stroke="var(--border)" stroke-width="1"/>
+  <text class="tiny" x="36" y="1118" font-weight="600">图例</text>
+
+  <rect x="78" y="1108" width="22" height="4" rx="2" fill="var(--build)"/>
+  <text class="tiny" x="108" y="1118">源码 / 构建 / 运行时依赖</text>
+
+  <rect x="278" y="1108" width="22" height="4" rx="2" fill="var(--patch)"/>
+  <text class="tiny" x="308" y="1118">唯一改动（补丁）</text>
+
+  <rect x="454" y="1108" width="22" height="4" rx="2" fill="var(--glue)"/>
+  <text class="tiny" x="484" y="1118">fnOS 胶水（本仓库）</text>
+
+  <rect x="656" y="1108" width="22" height="4" rx="2" fill="var(--pack)"/>
+  <text class="tiny" x="686" y="1118">打包 / 发布</text>
+
+  <rect x="800" y="1108" width="22" height="4" rx="2" fill="var(--down)"/>
+  <text class="tiny" x="830" y="1118">持久化数据</text>
+
+  <rect x="944" y="1108" width="22" height="4" rx="2" fill="var(--runtime)"/>
+  <text class="tiny" x="974" y="1118">上游功能</text>
+</svg>

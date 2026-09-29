@@ -2,12 +2,14 @@
 # build.sh — 从上游 decolua/9router 源码构建 9Router fnOS fpk（纯净上游 + 更新检查补丁）
 #
 # 用法:
-#   ./build.sh [VERSION] [ARCH]
+#   ./build.sh [VERSION] [ARCH] [UPSTREAM_TAG]
 # 示例:
 #   ./build.sh 0.5.91 x86      # 仅离线 x86（版本号缺省时自动读上游 package.json）
 #   ./build.sh                 # 自动版本, 四变体全打
+#   ./build.sh 0.5.91 "" v0.5.91   # 锁定上游到指定 tag（CI 用：保证版本号与源码一致）
 #
 # ARCH 参数保留兼容：给定时只打该架构的离线变体；缺省打全部四个变体
+# UPSTREAM_TAG 缺省时克隆上游默认分支 HEAD；给定（如 v0.5.91）时改用 --branch 锁定该 tag
 #   9router-<v>-x86.fpk          离线（内置构建产物），浏览器打开
 #   9router-<v>-iframe-x86.fpk   离线，桌面内嵌
 #   9router-<v>-all.fpk          在线构建（内置源码树），浏览器打开, x86/ARM 通用
@@ -24,6 +26,7 @@ set -euo pipefail
 
 VERSION_ARG="${1:-}"
 ARCH_ARG="${2:-}"
+UPSTREAM_TAG="${3:-}"
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="${BUILD_DIR:-$HOME/projects/build-9router-fpk-$$}"
 FNPACK_VERSION="1.2.1"
@@ -50,7 +53,12 @@ mkdir -p "${BUILD_DIR}"
 echo ""
 echo "[1/9] 克隆 decolua/9router..."
 cd "${BUILD_DIR}"
-git clone --depth 1 https://github.com/decolua/9router.git upstream 2>&1 | tail -3
+if [ -n "${UPSTREAM_TAG}" ]; then
+    echo "    锁定上游 tag: ${UPSTREAM_TAG}"
+    git clone --depth 1 --branch "${UPSTREAM_TAG}" https://github.com/decolua/9router.git upstream 2>&1 | tail -3
+else
+    git clone --depth 1 https://github.com/decolua/9router.git upstream 2>&1 | tail -3
+fi
 
 # ── 3. 应用更新检查补丁（唯一改动）──
 echo ""
@@ -77,6 +85,16 @@ else
     VERSION="$(node -p "require('$(pwd)/package.json').version")"
 fi
 echo "  Version: ${VERSION}"
+
+# 一致性校验：锁定了上游 tag 时，tag 的版本部分必须与实际打的版本号一致，
+# 否则说明传参错位（版本号与源码不是同一份），直接失败而不是静默产出错版包。
+if [ -n "${UPSTREAM_TAG}" ]; then
+    TAG_VER="${UPSTREAM_TAG#[vV]}"
+    if [ "${TAG_VER}" != "${VERSION}" ]; then
+        echo "ERROR: 版本号 (${VERSION}) 与上游 tag (${UPSTREAM_TAG}) 不一致" >&2
+        exit 1
+    fi
+fi
 
 # ── 5. 组装四个变体（x86/all × url/iframe）──
 # 每个变体独立 staging 目录；fnpack build -d . 打包当前目录。

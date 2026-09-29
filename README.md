@@ -113,11 +113,12 @@ decolua/9router (上游源码, 浅克隆)
 
 上游发新版后由 GitHub Actions 自动打包发布，无需人工干预：
 
-- **触发**：每 48 小时轮询上游最新 tag（见 [`.github/workflows/build.yml`](.github/workflows/build.yml)），或在本仓库 **Actions → Build & Release fpk → Run workflow** 手动触发
-- **幂等**：探测到的版本若已有同版本 Release 则跳过；手动触发时可勾选 `force` 强制重打，或填 `version` 指定版本
-- **流程**：读上游最新 tag 作版本号 → 跑 `build.sh` 打四个变体 → `gh release create` 发布并附产物
+- **触发**：每天轮询一次上游最新 tag（见 [`.github/workflows/build.yml`](.github/workflows/build.yml)），或在本仓库 **Actions → Build & Release fpk → Run workflow** 手动触发
+- **幂等**：探测到的版本若已有同版本 Release 则跳过，所以每天跑不会重复发版；手动触发时可勾选 `force` 强制重打，或填 `version` 指定版本
+- **流程**：读上游最新 tag（同时取到对应 commit）→ `build.sh` 把上游源码锁定到该 tag 构建四个变体 → 四个产物逐个断言存在 → 上传 artifact 兜底 → `gh release create` 发布并附产物
+- **版本与源码一致**：`build.sh` 锁定上游 tag 构建，并在版本号与 tag 不吻合时直接失败，避免打出「内容与版本号不符」的包
 
-定时任务在 GitHub 高峰期可能延迟，属正常现象。
+定时任务在 GitHub 高峰期可能延迟，属正常现象。首次上线前请确认仓库 **Settings → Actions → General → Workflow permissions** 允许读写（CI 创建 Release 需要 `contents: write`）。
 
 ## 从源码构建
 
@@ -130,6 +131,7 @@ cd 9router-fnos
 ./build.sh                # 自动版本，打全部四个变体
 ./build.sh 0.5.91         # 指定版本，打全部四个变体
 ./build.sh 0.5.91 x86     # 指定版本，只打 x86 离线变体（兼容旧行为）
+./build.sh 0.5.91 "" v0.5.91   # 锁定上游到指定 tag（CI 用法：版本号与源码强一致）
 ```
 
 依赖：`git`、`node 22+`、`npm`、`curl`；`fnpack` 首次运行自动下载并做 SHA256 校验。产物 `9router-<版本>[-iframe][-x86|all].fpk` 落在仓库根目录。

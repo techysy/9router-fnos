@@ -5,10 +5,20 @@
 ## 自动打包 CI + 项目记忆（2026-09-29）
 
 ### 新增 / Added
-- **GitHub Actions 自动打包**（`.github/workflows/build.yml`）：每 48 小时轮询上游 `decolua/9router` 最新 tag，或手动触发（可指定 `version` / `force`）；探测到的版本与已有 Release 相同则跳过（幂等），否则跑 `build.sh` 打四个变体后 `gh release create` 发布并附产物
+- **GitHub Actions 自动打包**（`.github/workflows/build.yml`）：每天轮询上游 `decolua/9router` 最新 tag，或手动触发（可指定 `version` / `force`）；探测到的版本与已有 Release 相同则跳过（幂等，不重复发版），否则跑 `build.sh` 打四个变体后 `gh release create` 发布并附产物
 - **CLAUDE.md**：项目记忆，记录核心原则（上游源码逐字节原样、唯一补丁）、仓库结构、构建发布流程、运行时事实与约定
 
+### 修复 / Fixed（CI 审查后的加固）
+- **版本与源码一致**：CI 把探测到的上游 tag 传给 `build.sh`，改用 `git clone --branch <tag>` 锁定源码；并新增版本号与 tag 的一致性校验（不吻合直接失败），避免上游默认分支领先于 tag 时打出「内容与版本号不符」的包
+- **预发布 tag 排除**：上游 tag 探测正则收紧为三段式纯数字（`v0.5.91`），排除 `-beta` / `-rc` 等预发布 tag 被误判为最新正式版
+- **产物完整性**：发布前逐个断言四个 fpk 存在（不再用 `9router-*.fpk` 通配符静默漏传）；新增 `actions/upload-artifact` 留存产物，`gh release create` 失败时仍可人工取回
+- **脚本注入**：手动输入的 `version` / `force` 改经 `env` 传入，不再直接插值进 `run:` 的 shell
+- **幂等判断**：`gh release view` 的 404（不存在，正常）与其他错误（网络/限流）区分处理，后者直接失败而非误判为需重新打包
+- **Release notes 链接**：改为完整 URL，并附上游 commit 链接（此前 `${UP_TAG}` 被渲染成相对路径 404）
+
 ### 变更 / Changed
+- `build.sh` 新增可选第三参数 `UPSTREAM_TAG`（缺省仍克隆默认分支，不影响本地手动构建）
+- CI job 增加 `timeout-minutes: 90`
 - README「从源码构建」更正 `build.sh` 用法（缺省打全部四变体，非只有 x86；架构参数为 `x86`/`all`），并新增「自动打包 (CI)」小节；项目结构补上 `.github/workflows/`
 
 ---

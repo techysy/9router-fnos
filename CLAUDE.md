@@ -37,7 +37,7 @@ docs/architecture.svg                 架构图（跟随 GitHub 深浅色主题�
 - 前置：git、node 22+、npm、curl；`fnpack`（固定 1.2.1，SHA256 校验）自动下载到 `~/.local/bin`，无需 root。
 - 产物（repo 根目录）：`9router-<v>-x86.fpk`（离线）、`-iframe-x86.fpk`（离线内嵌）、`-all.fpk`（在线构建，x86/ARM 通用）、`-iframe-all.fpk`。
 - x86 变体 = standalone 构建产物 + 补拷 `node-forge / sql.js / next / better-sqlite3` 等运行时依赖，装时免联网；all 变体 = 内置上游源码树，装时在 NAS 上 `npm install + next build`。
-- **发布流程：上游更新 → CI 自动打包（跑 build.sh）→ 产物发到本仓库 GitHub Releases**。
+- **发布流程：上游更新 → CI（`.github/workflows/build.yml`）自动打包 → 产物发到本仓库 GitHub Releases**。CI 每天轮询上游最新 tag，把 tag 传给 `build.sh` 第三参数锁定上游源码（保证版本号与源码一致），四产物逐个断言 + 上传 artifact 兜底，再 `gh release create`；同版本 Release 已存在则幂等跳过。
 - 注意：fnpack 的临时目录必须落在真实磁盘（build.sh 已用 `TMPDIR=${BUILD_DIR}-fnpack-tmp` 处理 tmpfs 配额问题），别改回去。
 
 ## 运行时事实（排障用）

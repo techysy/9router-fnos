@@ -2,7 +2,7 @@ name: Build & Release fpk
 
 # 上游 decolua/9router 发新版后自动打包，产物发到本仓库 GitHub Releases。
 #
-#   schedule         每 6 小时轮询一次上游最新 tag（GitHub 的定时任务在高峰期可能延迟，
+#   schedule         每 48 小时轮询一次上游最新 tag（GitHub 的定时任务在高峰期可能延迟，
 #                    不保证准点，属正常现象）
 #   workflow_dispatch 手动触发：可留空（自动探测上游最新 tag），也可指定 version 覆盖
 #
@@ -10,7 +10,8 @@ name: Build & Release fpk
 
 on:
   schedule:
-    - cron: "23 */6 * * *"
+    # 每 2 天的 03:23 跑一次（48 小时）
+    - cron: "23 3 */2 * *"
   workflow_dispatch:
     inputs:
       version:

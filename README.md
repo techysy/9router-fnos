@@ -113,7 +113,7 @@ decolua/9router (上游源码, 浅克隆)
 
 上游发新版后由 GitHub Actions 自动打包发布，无需人工干预：
 
-- **触发**：每 6 小时轮询上游最新 tag（见 [`.github/workflows/build.yml`](.github/workflows/build.yml)），或在本仓库 **Actions → Build & Release fpk → Run workflow** 手动触发
+- **触发**：每 48 小时轮询上游最新 tag（见 [`.github/workflows/build.yml`](.github/workflows/build.yml)），或在本仓库 **Actions → Build & Release fpk → Run workflow** 手动触发
 - **幂等**：探测到的版本若已有同版本 Release 则跳过；手动触发时可勾选 `force` 强制重打，或填 `version` 指定版本
 - **流程**：读上游最新 tag 作版本号 → 跑 `build.sh` 打四个变体 → `gh release create` 发布并附产物
 

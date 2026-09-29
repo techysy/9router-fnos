@@ -13,6 +13,8 @@
 
 ### 变更 / Changed
 - **删除仓库根的 `manifest` 占位文件**：没有任何代码引用它（build.sh 用 heredoc 自行生成真实清单），且 version `0.5.55`、desc 文案均已过时，留着只会误导。文档同步说明「真实 manifest 由 build.sh 生成」
+- **TROUBLESHOOTING 补「上机验证清单」**：覆盖端口/健康、`.env` 与 JWT、PID 与启停、登录链路、在线构建失败可见性、卷号推导六项，用于 `cmd/` 改动后的真机确认
+- **TROUBLESHOOTING 移除个人环境信息**：重置密码示例里写死的真实 NAS IP 与用户名已泛化，卷号与路径改为占位变量
 
 ---
 

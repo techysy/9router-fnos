@@ -30,12 +30,13 @@ PID_FILE="${DATA_DIR}/9router.pid"
 # .env 放在持久数据目录：不再写进会被升级覆盖的 ${SRC_DIR}
 ENV_FILE="${DATA_DIR}/.env"
 
-# pid_is_ours <pid> — 校验 PID 文件里的进程确实是本应用的 custom-server.js
+# pid_is_ours <pid> — 校验 PID 文件里的进程确实是本应用
 # 防止 PID 被复用/残留时 kill -0 误判为"已在运行"，导致服务永远拉不起来。
+# 注意：Next.js 启动后 process.title 改为 "next-server"，cmdline 中不再有 custom-server.js。
 pid_is_ours() {
     local p="$1"
     [ -n "${p}" ] && [ -r "/proc/${p}/cmdline" ] \
-        && tr '\0' ' ' < "/proc/${p}/cmdline" | grep -q 'custom-server\.js'
+        && tr '\0' ' ' < "/proc/${p}/cmdline" | grep -qE 'custom-server\.js|next-server'
 }
 
 # ensure_env — 首次生成 .env（随机 JWT_SECRET），并 source 进去作为唯一事实来源
@@ -123,13 +124,13 @@ stop() {
         fi
         rm -f "${PID_FILE}"
     fi
-    # 兜底：遍历 /proc，只杀命令行含 custom-server.js 且工作目录/环境属于本应用数据目录的进程，
-    # 避免 pkill -f 误伤同名其他应用。
+    # 兜底：遍历 /proc，只杀命令行含 custom-server.js 或 next-server 且工作目录属于本应用的进程。
+    # 注意：Next.js 启动后 process.title 改为 "next-server"，cmdline 中不再有 custom-server.js。
     local p="" cwd=""
     for p in /proc/[0-9]*; do
         cwd="$(readlink -f "${p}/cwd" 2>/dev/null || true)"
         if [ "${cwd}" = "${SRC_DIR}" ] \
-            && tr '\0' ' ' < "${p}/cmdline" 2>/dev/null | grep -q 'custom-server\.js'; then
+            && tr '\0' ' ' < "${p}/cmdline" 2>/dev/null | grep -qE 'custom-server\.js|next-server'; then
             kill "${p#/proc/}" 2>/dev/null || true
         fi
     done

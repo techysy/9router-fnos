@@ -1,0 +1,130 @@
+name: Build & Release fpk
+
+# 上游 decolua/9router 发新版后自动打包，产物发到本仓库 GitHub Releases。
+#
+#   schedule         每 6 小时轮询一次上游最新 tag（GitHub 的定时任务在高峰期可能延迟，
+#                    不保证准点，属正常现象）
+#   workflow_dispatch 手动触发：可留空（自动探测上游最新 tag），也可指定 version 覆盖
+#
+# 若探测到上游最新 tag 与本仓库已有 Release 相同，则跳过打包（幂等，不重复发）。
+
+on:
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "指定版本号（不带 v 前缀，留空=自动读上游最新 tag）"
+        required: false
+        type: string
+      force:
+        description: "已存在同版本 Release 时也强制重打"
+        required: false
+        type: boolean
+        default: false
+
+# 创建 Release / 上传产物需要写权限
+permissions:
+  contents: write
+
+# 同一时间只跑一个构建，避免并发写同一 Release
+concurrency:
+  group: build-fpk
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # ── 探测上游最新 tag，并判断是否需要打包 ──
+      - name: Resolve version
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          UPSTREAM="https://github.com/decolua/9router.git"
+
+          # 上游最新 tag（形如 v0.5.91），按版本号自然排序取最大
+          UP_TAG="$(git ls-remote --tags --refs "${UPSTREAM}" \
+            | sed 's#.*refs/tags/##' \
+            | grep -E '^v?[0-9]+\.[0-9]+' \
+            | sort -V | tail -1)"
+          if [ -z "${UP_TAG}" ]; then
+            echo "ERROR: 无法获取上游 tag" >&2
+            exit 1
+          fi
+          UP_VER="${UP_TAG#v}"
+          echo "上游最新: ${UP_TAG}"
+
+          # 版本：手动输入优先，其次上游 tag
+          VER="${{ inputs.version }}"
+          [ -n "${VER}" ] || VER="${UP_VER}"
+          VER="${VER#v}"
+          echo "本次打包版本: ${VER}"
+
+          # 幂等：同版本 Release 已存在则跳过（除非 force）
+          RELEASE_TAG="v${VER}"
+          EXISTS="$(gh release view "${RELEASE_TAG}" --repo "${{ github.repository }}" --json tagName -q .tagName 2>/dev/null || true)"
+          if [ -n "${EXISTS}" ] && [ "${{ inputs.force }}" != "true" ]; then
+            echo "Release ${RELEASE_TAG} 已存在，跳过。"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "version=${VER}"     >> "$GITHUB_OUTPUT"
+          echo "tag=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "upstream_tag=${UP_TAG}" >> "$GITHUB_OUTPUT"
+
+      # ── 构建四个变体 ──
+      # build.sh 自带：克隆上游 → 打唯一补丁 → npm install + next build → fnpack 打包
+      - name: Build fpk variants
+        if: steps.resolve.outputs.skip != 'true'
+        env:
+          VERSION: ${{ steps.resolve.outputs.version }}
+        run: |
+          set -euo pipefail
+          chmod +x build.sh
+          ./build.sh "${VERSION}"
+          echo "---- 产物 ----"
+          ls -lh 9router-*.fpk
+
+      # ── 发布到本仓库 Releases ──
+      - name: Publish Release
+        if: steps.resolve.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.resolve.outputs.tag }}
+          VER: ${{ steps.resolve.outputs.version }}
+          UP_TAG: ${{ steps.resolve.outputs.upstream_tag }}
+        run: |
+          set -euo pipefail
+          NOTES="$(cat <<EOF
+          由 CI 自动打包，跟随上游 [decolua/9router](${UP_TAG})。
+
+          | 文件 | 架构 | 桌面模式 |
+          |------|------|---------|
+          | \`9router-${VER}-x86.fpk\` | x86 | 浏览器打开，离线 |
+          | \`9router-${VER}-iframe-x86.fpk\` | x86 | 桌面内嵌，离线 |
+          | \`9router-${VER}-all.fpk\` | x86/ARM | 浏览器打开，在线构建 |
+          | \`9router-${VER}-iframe-all.fpk\` | x86/ARM | 桌面内嵌，在线构建 |
+
+          飞牛 **App Center → 手动安装** 选择对应 fpk。
+          EOF
+          )"
+
+          gh release create "${TAG}" \
+            --repo "${{ github.repository }}" \
+            --title "${TAG}" \
+            --notes "${NOTES}" \
+            --target "${{ github.sha }}" \
+            9router-*.fpk

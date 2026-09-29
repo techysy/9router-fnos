@@ -2,6 +2,17 @@
 
 ---
 
+## 自动打包 CI + 项目记忆（2026-09-29）
+
+### 新增 / Added
+- **GitHub Actions 自动打包**（`.github/workflows/build.yml`）：每 6 小时轮询上游 `decolua/9router` 最新 tag，或手动触发（可指定 `version` / `force`）；探测到的版本与已有 Release 相同则跳过（幂等），否则跑 `build.sh` 打四个变体后 `gh release create` 发布并附产物
+- **CLAUDE.md**：项目记忆，记录核心原则（上游源码逐字节原样、唯一补丁）、仓库结构、构建发布流程、运行时事实与约定
+
+### 变更 / Changed
+- README「从源码构建」更正 `build.sh` 用法（缺省打全部四变体，非只有 x86；架构参数为 `x86`/`all`），并新增「自动打包 (CI)」小节；项目结构补上 `.github/workflows/`
+
+---
+
 ## 仓库重定位：纯上游打包（2026-09-27）
 
 ### 变更 / Changed

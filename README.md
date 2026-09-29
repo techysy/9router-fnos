@@ -109,6 +109,16 @@ decolua/9router (上游源码, 浅克隆)
 
 补丁为精确标记替换：上游源码漂移导致标记缺失时**构建直接失败**（不静默跳过），此时需要人工评估补丁是否需要跟进。
 
+## 自动打包 (CI)
+
+上游发新版后由 GitHub Actions 自动打包发布，无需人工干预：
+
+- **触发**：每 6 小时轮询上游最新 tag（见 [`.github/workflows/build.yml`](.github/workflows/build.yml)），或在本仓库 **Actions → Build & Release fpk → Run workflow** 手动触发
+- **幂等**：探测到的版本若已有同版本 Release 则跳过；手动触发时可勾选 `force` 强制重打，或填 `version` 指定版本
+- **流程**：读上游最新 tag 作版本号 → 跑 `build.sh` 打四个变体 → `gh release create` 发布并附产物
+
+定时任务在 GitHub 高峰期可能延迟，属正常现象。
+
 ## 从源码构建
 
 在能访问 GitHub 与 fnpack CDN 的 Linux 机器（NAS / x86 构建机）上执行：
@@ -117,11 +127,12 @@ decolua/9router (上游源码, 浅克隆)
 git clone https://github.com/techysy/9router-fnos.git
 cd 9router-fnos
 
-./build.sh                # 自动版本, x86
-./build.sh 0.5.91 arm     # 指定版本与架构
+./build.sh                # 自动版本，打全部四个变体
+./build.sh 0.5.91         # 指定版本，打全部四个变体
+./build.sh 0.5.91 x86     # 指定版本，只打 x86 离线变体（兼容旧行为）
 ```
 
-依赖：`git`、`node 22+`、`npm`、`curl`；`fnpack` 首次运行自动下载并做 SHA256 校验。产物 `9router-<版本>-<arch>.fpk` 落在仓库根目录。
+依赖：`git`、`node 22+`、`npm`、`curl`；`fnpack` 首次运行自动下载并做 SHA256 校验。产物 `9router-<版本>[-iframe][-x86|all].fpk` 落在仓库根目录。
 
 ## 项目结构
 
@@ -138,6 +149,7 @@ cd 9router-fnos
 ├── config/                           # 数据共享声明（/vol4/@appdata/9router）
 ├── wizard/                           # 安装向导
 ├── manifest                          # fnpack 清单模板（build.sh 生成实际值）
+├── .github/workflows/build.yml       # CI：轮询上游 tag → build.sh → 发 Release
 └── TROUBLESHOOTING.md                # 常见问题排查
 ```
 

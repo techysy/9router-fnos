@@ -94,7 +94,7 @@ decolua/9router (上游源码, 浅克隆)
 
 ### 登录说明
 
-本包默认开启登录，首次登录初始密码为 **`123456`**（由打包胶水 `cmd/main` 写入 `.env`，安装/升级时自动把上游占位值修正为该值）。API 调用仍受 API Key 保护。
+本包默认开启登录，首次登录初始密码为 **`123456`**（由打包胶水 `cmd/main` 首次启动写入数据目录下的 `.env`，同时生成随机 `JWT_SECRET`；安装/升级时自动把上游占位值修正为该密码）。API 调用仍受 API Key 保护。
 
 > ⚠️ **飞牛移动 App 限制**：移动 App 用 WebView iframe 打开应用，登录 cookie（`SameSite=lax`）无法在容器内保存，会反复跳回登录页；如需在移动容器内使用，可在 Profile → Settings 关闭「Require Login」。完整体验请用电脑/手机浏览器直接访问上述地址。
 
@@ -150,7 +150,7 @@ cd 9router-fnos
 ├── app/ui/                           # 桌面图标配置
 ├── config/                           # 数据共享声明（<卷>/@appdata/9router）
 ├── wizard/                           # 安装向导
-├── manifest                          # fnpack 清单模板（build.sh 生成实际值）
+├── scripts/                          # generate-icons.py、check_pw.py
 ├── .github/workflows/build.yml       # CI：轮询上游 tag → build.sh → 发 Release
 └── TROUBLESHOOTING.md                # 常见问题排查
 ```

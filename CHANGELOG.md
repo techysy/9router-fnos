@@ -2,6 +2,20 @@
 
 ---
 
+## 文档与仓库卫生（2026-09-29）
+
+### 新增 / Added
+- **`LICENSE`**：补上 MIT 原文（此前 README 徽章指向的 `LICENSE` 文件并不存在）
+
+### 修复 / Fixed
+- **安装向导的 MIT 文本被误改**：`wizard/install` 里原文 `WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE` 被改成 `THEORY, OR LIABILITY, WHETHER IN...`，用户确认的协议与实际分发的不符；已替换为规范 MIT 文本
+- **README.en.md 与中文版严重脱节**：仍写着错误参数 `[x86|arm]`、单数 fpk、无四变体矩阵 / CI / TROUBLESHOOTING 链接；已重写与 README.md 对齐
+
+### 变更 / Changed
+- **删除仓库根的 `manifest` 占位文件**：没有任何代码引用它（build.sh 用 heredoc 自行生成真实清单），且 version `0.5.55`、desc 文案均已过时，留着只会误导。文档同步说明「真实 manifest 由 build.sh 生成」
+
+---
+
 ## 胶水脚本加固（2026-09-29）
 
 针对 fnOS 生命周期脚本的审查修复。

@@ -23,19 +23,24 @@ cmd/                                  fnOS 生命周期胶水（bash）:
 app/ui/                               桌面图标 + ui/config（url=浏览器打开 | iframe=桌面内嵌）
 config/privilege, config/resource     权限与数据共享声明
 wizard/install                        安装向导（MIT License 确认页）
-manifest                              单文件占位模板；真实值由 build.sh 按 variant 生成（build.sh 不读它）
 scripts/generate-icons.py             生成 ICON*.PNG 与 app/ui/images/*（build.sh 的输入）
 scripts/check_pw.py                   排障：查看 SQLite 里的密码哈希 / requireLogin
 docs/architecture.svg                 架构图（跟随 GitHub 深浅色主题）
 .github/ISSUE_TEMPLATE/               issue 模板（bug / 更新请求）
 ```
 
+仓库里**没有** manifest 文件——真实 manifest 由 build.sh 每个 variant 用 heredoc 生成到 staging 目录（`appname=9router`、端口 20128、`install_dep_apps=nodejs_v24`、platform 按变体），要改清单字段直接改 build.sh。
+
 ## 构建与发布
 
 ```bash
-./build.sh                # 自动版本，四个变体全打
-./build.sh 0.5.91 x86     # 指定版本，只打该架构离线变体（兼容旧行为）
+./build.sh                       # 自动版本，四个变体全打
+./build.sh 0.5.91                # 指定版本，四个变体全打
+./build.sh 0.5.91 x86            # 指定版本，只打 x86 离线变体
+./build.sh 0.5.91 "" v0.5.91     # 锁定上游 tag（CI 用法；版本号与 tag 不一致会直接失败）
 ```
+
+ARCH 参数仅接受留空 / `x86` / `all`（ARM 用 `all` 变体），其他值直接报错。
 
 - 前置：git、node 22+、npm、curl；`fnpack`（固定 1.2.1，SHA256 校验）自动下载到 `~/.local/bin`，无需 root。
 - 产物（repo 根目录）：`9router-<v>-x86.fpk`（离线）、`-iframe-x86.fpk`（离线内嵌）、`-all.fpk`（在线构建，x86/ARM 通用）、`-iframe-all.fpk`。

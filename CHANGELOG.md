@@ -2,6 +2,30 @@
 
 ---
 
+## 胶水脚本加固（2026-09-29）
+
+针对 fnOS 生命周期脚本的审查修复。
+
+### 修复 / Fixed
+- **构建失败被静默吞掉**：`install_callback` / `upgrade_callback` 里 `npm install exit=$?` 的 `$?` 被 `$(date)` 命令替换覆盖，日志恒为 `exit=0`，配合失败后 `exit 0`，导致 App Center 显示「安装成功」但点开空白页。改为先落码再记日志，且致命失败以非零退出
+- **`.env` 修正时机错位**：`install_callback` 的 `.env` 修正写在构建产物早退之后，x86 离线包（已内置产物）走早退时**从不修正**上游占位密码 `change-me`；现与 `upgrade_callback` 对齐，置于早退之前，无论是否重建都执行
+- **`JWT_SECRET` 明文占位 + 升级丢失**：`.env` 原先写在会被升级覆盖的 `${APP_DIR}/server` 下，且 `JWT_SECRET` 是固定占位符。现移至持久数据目录 `${DATA_DIR}/.env`，首次启动生成随机 `JWT_SECRET`，并由 `cmd/main` source 作为唯一事实来源（此前 `.env` 里的 `INITIAL_PASSWORD` 对启动完全无效，改密码不生效）
+- **PID 复用误判**：`kill -0` 只看 PID 存活，PID 被复用/残留时误判「已在运行」，服务永远拉不起来。新增 `pid_is_ours` 校验 `/proc/<pid>/cmdline` 确含 `custom-server.js`
+- **`stop` 杀不干净 / 可能误杀**：原 `pkill -f "${SRC_DIR}/custom-server.js"` 与进程实际 cmdline（相对路径）不匹配，是死代码；改为遍历 `/proc` 只杀工作目录属于本应用的进程，并加等待退出 + SIGKILL 升级
+- **x86 变体漏拷 `node-machine-id`**：上游 Dockerfile 明确要拷（`createRequire` 运行时加载，Next tracing 会漏），`src/mitm/manager.js` 与 `open-sse/shared/machineId.js` 都要用，漏拷会使派生密钥走 fail-open 兜底
+- **`arm` 参数语义错误**：传 `arm` 会下载 arm64 的 fnpack 并在 x86 构建机上执行（`Exec format error`），且产出非文档化的 `-arm.fpk`。现白名单校验仅允许留空 / `x86` / `all`（ARM 用 `all` 变体），fnpack 二进制改按构建机架构选择
+
+### 新增 / Added
+- **`cmd/lib.sh`**：抽出数据目录 / server / node 定位、`.env` 修正、在线构建等公用函数，消除 `install_callback` 与 `upgrade_callback` 之间已发生的逻辑漂移
+- **在线构建超时**：`npm install` 30 分钟、`next build` 60 分钟超时，避免低内存设备挂死后安装界面永久卡住
+
+### 变更 / Changed
+- `check_pw.py` 从仓库根移到 `scripts/check_pw.py` 并参数化路径（原文件含作者本机硬编码路径）
+- `.gitattributes` 为无扩展名的 `cmd/*`、`wizard/*` 强制 LF（CRLF 会导致 NAS 上 `#!/bin/bash\r` 报错）
+- README / TROUBLESHOOTING / CLAUDE.md 同步（数据目录不写死卷号、`.env`/`JWT_SECRET` 位置与生成方式、补全仓库结构）
+
+---
+
 ## 自动打包 CI + 项目记忆（2026-09-29）
 
 ### 新增 / Added

@@ -31,14 +31,29 @@ REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="${BUILD_DIR:-$HOME/projects/build-9router-fpk-$$}"
 FNPACK_VERSION="1.2.1"
 
-# fnpack SHA256 校验
-if [ "$ARCH_ARG" = "arm" ]; then
-    FNPACK_BIN="fnpack-${FNPACK_VERSION}-linux-arm64"
-    FNPACK_SHA256="aad9e16b101267d30017f39ab969e3c085fbce209716f8bd3b1e167eaf15e0cf"
-else
-    FNPACK_BIN="fnpack-${FNPACK_VERSION}-linux-amd64"
-    FNPACK_SHA256="72d2a4095da676b64510b023731a227b369d80f8079bc45ff8a2f802ec0480c1"
-fi
+# ARCH_ARG 白名单：只允许空（打全变体）、x86、all。
+# 注意 all 变体已覆盖 ARM（装时在线构建），无需也不支持单独打 arm。
+# 历史遗留的 arm 参数会去下 arm64 的 fnpack 并在 x86 构建机上执行（Exec format error），
+# 且产出非文档化的 -arm.fpk —— 直接拒绝。
+case "${ARCH_ARG}" in
+    ""|x86|all) ;;
+    *)
+        echo "ERROR: 不支持的 ARCH 参数 '${ARCH_ARG}'（仅支持留空 / x86 / all；ARM 用 all 变体）" >&2
+        exit 1
+        ;;
+esac
+
+# fnpack 二进制按构建机架构选择（fnpack 在构建机上执行，与目标包平台无关）
+case "$(uname -m)" in
+    aarch64|arm64)
+        FNPACK_BIN="fnpack-${FNPACK_VERSION}-linux-arm64"
+        FNPACK_SHA256="aad9e16b101267d30017f39ab969e3c085fbce209716f8bd3b1e167eaf15e0cf"
+        ;;
+    *)
+        FNPACK_BIN="fnpack-${FNPACK_VERSION}-linux-amd64"
+        FNPACK_SHA256="72d2a4095da676b64510b023731a227b369d80f8079bc45ff8a2f802ec0480c1"
+        ;;
+esac
 
 echo "=========================================="
 echo "  9Router fnOS fpk 构建"
@@ -114,8 +129,11 @@ pack_variant() {
         cp -r open-sse "${STAGE}/app/server/"
         cp -r src/mitm "${STAGE}/app/server/"
         # 原生模块 / tracing 不含的运行时依赖（存在才拷）
+        # 清单对齐上游 Dockerfile：node-machine-id 由 createRequire 运行时加载，
+        # Next tracing 会漏掉它（src/mitm/manager.js 与 open-sse 的 machineId 都要用），
+        # 漏拷会导致 deriveKey 走 fail-open 兜底。better-sqlite3 为本仓库额外保留。
         mkdir -p "${STAGE}/app/server/node_modules"
-        for pkg in node-forge sql.js next better-sqlite3; do
+        for pkg in node-forge sql.js next better-sqlite3 node-machine-id; do
             [ -d "node_modules/${pkg}" ] && cp -r "node_modules/${pkg}" "${STAGE}/app/server/node_modules/" || true
         done
         PLATFORM="x86"

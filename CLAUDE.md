@@ -16,13 +16,16 @@
 build.sh                              一键构建：上游克隆 → 补丁 → 构建 → 打四个 fpk
 patches/update-check-9router-fnos.mjs 唯一的上游源码改动（更新检查重定向）
 cmd/                                  fnOS 生命周期胶水（bash）:
-  main                                  启动：定位 server 目录、找 nodejs_v24、写 .env 初始密码、清 SQLite WAL/SHM
-  install_init / install_callback       安装（callback 里检测在线构建产物 + node_modules 兜底软链）
+  lib.sh                                公用函数：数据目录 / server / node 定位、.env 修正、在线构建
+  main                                  启动：定位运行时、生成 .env（随机 JWT_SECRET）、清 SQLite WAL/SHM、启停
+  install_init / install_callback       安装（callback 检测在线构建产物 + node_modules 兜底软链）
   upgrade_* / uninstall_* / config_*    升级 / 卸载 / 配置回调
 app/ui/                               桌面图标 + ui/config（url=浏览器打开 | iframe=桌面内嵌）
 config/privilege, config/resource     权限与数据共享声明
 wizard/install                        安装向导（MIT License 确认页）
-manifest/                             仓库内占位；真实 manifest 由 build.sh 按 variant 生成
+manifest                              单文件占位模板；真实值由 build.sh 按 variant 生成（build.sh 不读它）
+scripts/generate-icons.py             生成 ICON*.PNG 与 app/ui/images/*（build.sh 的输入）
+scripts/check_pw.py                   排障：查看 SQLite 里的密码哈希 / requireLogin
 docs/architecture.svg                 架构图（跟随 GitHub 深浅色主题）
 .github/ISSUE_TEMPLATE/               issue 模板（bug / 更新请求）
 ```
@@ -47,10 +50,10 @@ docs/architecture.svg                 架构图（跟随 GitHub 深浅色主题�
 | 端口 | `20128`（避免与 10Router 冲突，勿改） |
 | 数据目录 | `TRIM_PKGVAR`，兜底 `<卷>/@appdata/9router/`（不写死卷号） |
 | Node 运行时 | fnOS App Center `nodejs_v24`（manifest `install_dep_apps`） |
-| 初始登录密码 | `123456`，由 `cmd/main` 写入 `.env` |
+| 初始登录密码 | `123456`，`cmd/main` 首次启动写入 `${DATA_DIR}/.env`（持久目录，不会被升级覆盖）；`JWT_SECRET` 首次生成随机值 |
 | 部署布局 | 兼容两种：`${APP_DIR}/server` 与 `${APP_DIR}/target/server` |
 
-已知坑（都有对应修复，别回退）：启动前清理 `data.sqlite-shm/wal` 残留（node:sqlite "unable to open database file"）；移动 App WebView iframe 存不住登录 cookie，完整体验用浏览器直连。
+已知坑（都有对应修复，别回退）：启动前清理 `data.sqlite-shm/wal` 残留（node:sqlite "unable to open database file"）；移动 App WebView iframe 存不住登录 cookie，完整体验用浏览器直连；`cmd/*` 是无扩展名 bash，`.gitattributes` 已强制 LF（CRLF 会导致 NAS 上 `#!/bin/bash\r` 报错）；在线构建的失败必须非零退出，否则 App Center 会「安装成功」但点开空白页。
 
 ## 约定
 

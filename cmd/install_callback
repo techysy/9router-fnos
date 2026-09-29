@@ -1,100 +1,45 @@
 #!/bin/bash
 # 安装后置：确保数据目录可写 + 在线构建 server (若 fpk 未内置构建产物)
+#
+# 失败语义：致命失败（server 目录缺失 / 在线构建失败）以非零退出，
+# 让 fnOS App Center 显示"安装失败"，而不是假装成功让用户点开得到空白页。
 set -uo pipefail
 
 APP_NAME="${TRIM_APPNAME:-9router}"
 APP_DIR="${TRIM_APPDEST:-/var/apps/${APP_NAME}}"
-# 数据目录: 优先 TRIM_PKGVAR (fnOS 注入); 兜底从 APP_DIR 提取卷推导, 不写死 /vol4
-APP_VOL=""
-if [ -n "${TRIM_PKGVAR:-}" ]; then
-    DATA_DIR="${TRIM_PKGVAR}"
-else
-    if [ -L "${APP_DIR}/home" ]; then
-        APP_HOME="$(readlink -f "${APP_DIR}/home")"
-        APP_VOL="$(printf '%s' "${APP_HOME}" | sed -n 's#^\(/vol[^/]*\)/.*#\1#p')"
-    fi
-    if [ -z "${APP_VOL}" ]; then
-        APP_VOL="$(printf '%s' "${APP_DIR}" | sed -n 's#^\(/vol[^/]*\)/.*#\1#p')"
-    fi
-    if [ -n "${APP_VOL}" ]; then
-        DATA_DIR="${APP_VOL}/@appdata/${APP_NAME}"
-    else
-        DATA_DIR="${APP_DIR}/var"
-    fi
-fi
+CMD_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib.sh
+. "${CMD_DIR}/lib.sh"
+
+DATA_DIR="$(9router_resolve_data_dir "${APP_NAME}" "${APP_DIR}")"
 LOG="${DATA_DIR}/install.log"
 
 mkdir -p "${DATA_DIR}"
 echo "[$(date '+%F %T')] install_callback start" >> "${LOG}"
 
 # 定位 server 目录 (fpk 内置源码/构建产物解压到 ${APP_DIR}/server)
-SRC_DIR=""
-for cand in "${APP_DIR}/server" "${APP_DIR}/target/server"; do
-    [ -d "$cand" ] && SRC_DIR="$cand" && break
-done
+SRC_DIR="$(9router_find_server_dir "${APP_DIR}")"
 if [ -z "${SRC_DIR}" ]; then
-    echo "[$(date '+%F %T')] ERROR: server dir not found (${APP_DIR}/server)" >> "${LOG}"
-    exit 0
+    echo "[$(date '+%F %T')] ERROR: server dir not found (tried ${APP_DIR}/server and ${APP_DIR}/target/server)" >> "${LOG}"
+    exit 1
 fi
 
-# 若已含构建产物 (.next-cli-build 或 .next), 跳过在线构建
-# 多路径检测：fpk 解压可能在不同位置完成
-BUILT=0
-for check in "${SRC_DIR}/.next-cli-build" "${SRC_DIR}/.next" "${APP_DIR}/target/server/.next-cli-build" "${APP_DIR}/target/server/.next"; do
-    if [ -d "$check" ]; then BUILT=1; break; fi
-done
-if [ "$BUILT" -eq 1 ]; then
-    echo "[$(date '+%F %T')] server already built at ${check} (skip online build)" >> "${LOG}"
+# 修正上游开发占位密码 —— 无论是否内置构建产物都要执行
+# （旧版把这段放在 BUILT 早退之后，x86 离线包从不修正 .env，属实锤 bug）
+9router_fix_initial_password "${SRC_DIR}" "${LOG}"
+
+# 若已含构建产物 (.next-cli-build 或 .next), 跳过在线构建（多路径检测）
+if 9router_has_build_artifact "${SRC_DIR}" "${APP_DIR}"; then
+    echo "[$(date '+%F %T')] server already built (skip online build)" >> "${LOG}"
     # 确保 node_modules 完整（x86 离线版应自带）
-    if [ ! -d "${SRC_DIR}/node_modules" ] && [ -d "${APP_DIR}/target/server/node_modules" ]; then
-        ln -s "${APP_DIR}/target/server/node_modules" "${SRC_DIR}/node_modules" 2>/dev/null || true
-        echo "[$(date '+%F %T')] linked node_modules from target" >> "${LOG}"
-    fi
+    9router_link_node_modules "${SRC_DIR}" "${APP_DIR}" "${LOG}"
     exit 0
 fi
 
 echo "[$(date '+%F %T')] online build: npm install + next build..." >> "${LOG}"
-# 动态获取应用卷 (从数据目录提取 /volX), 避免写死卷路径
-APP_VOL="$(printf '%s' "${DATA_DIR}" | sed -n 's#^\(/vol[^/]*\)/.*#\1#p')"
-
-# 定位 nodejs_v24 (优先 fnOS 标准软链 /var/apps/<dep>/target, fallback 应用卷)
-NODE_DIR=""
-for cand in /var/apps/nodejs_v24/target/bin "${APP_VOL}/@appcenter/nodejs_v24/bin"; do
-    [ -x "$cand/node" ] && NODE_DIR="$cand" && break
-done
-if [ -z "${NODE_DIR}" ]; then
-    echo "[$(date '+%F %T')] ERROR: nodejs_v24 not found; cannot build 9router" >> "${LOG}"
+if 9router_online_build "${SRC_DIR}" "${DATA_DIR}" "${LOG}"; then
     exit 0
 fi
-export PATH="${NODE_DIR}:${PATH}"
-export HOME="${DATA_DIR}"
-# 低内存设备 (R2S 等 1GB) 降低并发, 降低 node 堆峰值 (next build 可能需要调大)
-export npm_config_jobs=1
-export NODE_OPTIONS="--max-old-space-size=1024"
 
-cd "${SRC_DIR}"
-echo "[$(date '+%F %T')] npm install..." >> "${LOG}"
-npm install --no-audit --no-fund >> "${LOG}" 2>&1
-echo "[$(date '+%F %T')] npm install exit=$?" >> "${LOG}"
-
-echo "[$(date '+%F %T')] next build (NEXT_DIST_DIR=.next-cli-build)..." >> "${LOG}"
-NEXT_DIST_DIR=.next-cli-build npm run build >> "${LOG}" 2>&1
-echo "[$(date '+%F %T')] next build exit=$?" >> "${LOG}"
-
-if [ -d "${SRC_DIR}/.next-cli-build" ]; then
-    echo "[$(date '+%F %T')] online build OK: .next-cli-build present" >> "${LOG}"
-else
-    echo "[$(date '+%F %T')] ERROR: online build did not produce .next-cli-build (check install.log)" >> "${LOG}"
-fi
-
-# 确保初始密码不是开发占位值 change-me (修正 server 内 .env / .env.example)
-for envf in "${SRC_DIR}/.env" "${SRC_DIR}/.env.example"; do
-    if [ -f "$envf" ]; then
-        if grep -q '^INITIAL_PASSWORD=change-me' "$envf" 2>/dev/null; then
-            sed -i 's/^INITIAL_PASSWORD=change-me.*/INITIAL_PASSWORD=123456/' "$envf" 2>/dev/null || true
-            echo "[$(date '+%F %T')] fixed INITIAL_PASSWORD=change-me -> 123456 in $envf" >> "${LOG}"
-        fi
-    fi
-done
-
-exit 0
+echo "[$(date '+%F %T')] ERROR: online build failed (check install.log)" >> "${LOG}"
+exit 1

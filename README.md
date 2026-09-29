@@ -82,7 +82,7 @@ decolua/9router (上游源码, 浅克隆)
 | 项 | 值 |
 |---|---|
 | 端口 | `20128` |
-| 数据目录 | `/vol4/@appdata/9router/` |
+| 数据目录 | `/volX/@appdata/9router/`（`TRIM_PKGVAR` 优先，卷号按实际环境） |
 | Node 运行时 | fnOS App Center `nodejs_v24` |
 
 ### 浏览器直接访问
@@ -148,7 +148,7 @@ cd 9router-fnos
 │   ├── install_callback / upgrade_callback
 │   └── uninstall_callback / config_callback / ...
 ├── app/ui/                           # 桌面图标配置
-├── config/                           # 数据共享声明（/vol4/@appdata/9router）
+├── config/                           # 数据共享声明（<卷>/@appdata/9router）
 ├── wizard/                           # 安装向导
 ├── manifest                          # fnpack 清单模板（build.sh 生成实际值）
 ├── .github/workflows/build.yml       # CI：轮询上游 tag → build.sh → 发 Release

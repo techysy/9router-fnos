@@ -1,5 +1,8 @@
 # TROUBLESHOOTING / 故障排除
 
+> 下文示例中的 `/vol4` 是常见卷号，**请按实际环境替换**：数据目录为 `TRIM_PKGVAR`（或 `<卷>/@appdata/9router`），
+> 应用安装目录为 `TRIM_APPDEST`（或 `/var/apps/9router`）。不确定时看 `env | grep TRIM`。
+
 ---
 
 ## Cloudflare 卡片显示"无连接"（即使连接已添加且活跃）

@@ -1,106 +1,143 @@
 #!/bin/bash
+# 9router 启停：定位运行时、准备 .env、拉起 custom-server.js
 set -euo pipefail
 
 APP_NAME="${TRIM_APPNAME:-9router}"
 APP_DIR="${TRIM_APPDEST:-/var/apps/${APP_NAME}}"
-# 数据目录: 优先 TRIM_PKGVAR (fnOS 注入). 兜底: 从 fnOS home 软链 (/volX/@apphome/<app>) 推导卷,
-# 或从 APP_DIR 推导; 不写死具体卷. (某些 fnOS 部署 APP_DIR=/var/apps/<app> 且无 TRIM_PKGVAR)
-APP_VOL=""
-if [ -n "${TRIM_PKGVAR:-}" ]; then
-    DATA_DIR="${TRIM_PKGVAR}"
-else
-    if [ -L "${APP_DIR}/home" ]; then
-        APP_HOME="$(readlink -f "${APP_DIR}/home")"
-        APP_VOL="$(printf '%s' "${APP_HOME}" | sed -n 's#^\(/vol[^/]*\)/.*#\1#p')"
-    fi
-    if [ -z "${APP_VOL}" ]; then
-        APP_VOL="$(printf '%s' "${APP_DIR}" | sed -n 's#^\(/vol[^/]*\)/.*#\1#p')"
-    fi
-    if [ -n "${APP_VOL}" ]; then
-        DATA_DIR="${APP_VOL}/@appdata/${APP_NAME}"
-    else
-        DATA_DIR="${APP_DIR}/var"
-    fi
-fi
+CMD_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib.sh
+. "${CMD_DIR}/lib.sh"
 
-# 兼容两种部署布局：
-#   fnOS 传 TRIM_APPDEST=/vol4/@appcenter/9router → server 直接在 ${APP_DIR}/server
-#   旧版/部分版本 TRIM_APPDEST=/var/apps/9router    → server 在 ${APP_DIR}/target/server
-if [ -d "${APP_DIR}/server" ]; then
-    SRC_DIR="${APP_DIR}/server"
-elif [ -d "${APP_DIR}/target/server" ]; then
-    SRC_DIR="${APP_DIR}/target/server"
-else
+# 数据目录 / server 目录 / Node 运行时（定位逻辑与 install/upgrade 共用 lib.sh，避免漂移）
+DATA_DIR="$(9router_resolve_data_dir "${APP_NAME}" "${APP_DIR}")"
+SRC_DIR="$(9router_find_server_dir "${APP_DIR}")"
+if [ -z "${SRC_DIR}" ]; then
     echo "ERROR: server dir not found (tried ${APP_DIR}/server and ${APP_DIR}/target/server)" >&2
     exit 1
 fi
 
-# Node.js 运行时（由 manifest install_dep_apps=nodejs_v24 提供）
-APP_VOL="$(printf '%s' "${DATA_DIR}" | sed -n 's#^\(/vol[^/]*\)/.*#\1#p')"
-NODE_BIN=""
-for cand in "/var/apps/nodejs_v24/target/bin/node" "${APP_VOL}/@appcenter/nodejs_v24/bin/node" "/vol4/@appcenter/nodejs_v24/bin/node"; do
-  [ -x "$cand" ] && NODE_BIN="$cand" && break
-done
-[ -n "$NODE_BIN" ] || NODE_BIN="$(command -v node || echo /usr/bin/node)"
-if [ ! -x "$NODE_BIN" ]; then
-  echo "ERROR: Node.js runtime not found. Please install the 'nodejs_v24' app from the fnOS App Center." >&2
-  exit 1
+NODE_BIN="$(9router_find_node_bin "${DATA_DIR}")"
+[ -n "${NODE_BIN}" ] || NODE_BIN="$(command -v node || echo /usr/bin/node)"
+if [ ! -x "${NODE_BIN}" ]; then
+    echo "ERROR: Node.js runtime not found. Please install the 'nodejs_v24' app from the fnOS App Center." >&2
+    exit 1
 fi
 
 PORT="${TRIM_SERVICE_PORT:-20128}"
 HOSTNAME="0.0.0.0"
 LOG="${DATA_DIR}/9router.log"
 PID_FILE="${DATA_DIR}/9router.pid"
+# .env 放在持久数据目录：不再写进会被升级覆盖的 ${SRC_DIR}
+ENV_FILE="${DATA_DIR}/.env"
+
+# pid_is_ours <pid> — 校验 PID 文件里的进程确实是本应用的 custom-server.js
+# 防止 PID 被复用/残留时 kill -0 误判为"已在运行"，导致服务永远拉不起来。
+pid_is_ours() {
+    local p="$1"
+    [ -n "${p}" ] && [ -r "/proc/${p}/cmdline" ] \
+        && tr '\0' ' ' < "/proc/${p}/cmdline" | grep -q 'custom-server\.js'
+}
+
+# ensure_env — 首次生成 .env（随机 JWT_SECRET），并 source 进去作为唯一事实来源
+ensure_env() {
+    if [ ! -f "${ENV_FILE}" ]; then
+        local jwt
+        # 优先 openssl，其次 /dev/urandom，最后退回时间+pid（兜底，不推荐）
+        if command -v openssl >/dev/null 2>&1; then
+            jwt="$(openssl rand -hex 32)"
+        elif [ -r /dev/urandom ]; then
+            jwt="$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+        else
+            jwt="$(date +%s)-$$"
+        fi
+        cat > "${ENV_FILE}" <<EOF
+INITIAL_PASSWORD=123456
+JWT_SECRET=${jwt}
+EOF
+        chmod 600 "${ENV_FILE}" 2>/dev/null || true
+        echo "created ${ENV_FILE} (random JWT_SECRET)"
+    fi
+    # .env 是唯一事实来源，覆盖环境里可能存在的旧值
+    set -a
+    . "${ENV_FILE}"
+    set +a
+}
 
 start() {
-    mkdir -p "${DATA_DIR}"
-    if [ -f "${PID_FILE}" ] && kill -0 "$(cat "${PID_FILE}")" 2>/dev/null; then
+    mkdir -p "${DATA_DIR}" "${DATA_DIR}/db"
+    if [ -f "${PID_FILE}" ] && pid_is_ours "$(cat "${PID_FILE}" 2>/dev/null || true)"; then
         echo "already running (pid $(cat "${PID_FILE}"))"
         return 0
     fi
+    # PID 文件残留但进程已不是我们 → 清理
+    rm -f "${PID_FILE}" 2>/dev/null || true
+
     # 清理 SQLite WAL/SHM 残留（旧版/跨用户安装后属主可能错误，导致 node:sqlite 无法打开）
     rm -f "${DATA_DIR}/db/data.sqlite-shm" "${DATA_DIR}/db/data.sqlite-wal" 2>/dev/null || true
-    # 确保 .env 存在（NEXT.js 读取 INITIAL_PASSWORD 等配置）
-    if [ ! -f "${SRC_DIR}/.env" ]; then
-        cat > "${SRC_DIR}/.env" <<'ENVEOF'
-INITIAL_PASSWORD=123456
-JWT_SECRET=change-me-to-a-random-string
-ENVEOF
-        echo "created default .env in ${SRC_DIR}"
-    fi
+
+    ensure_env
+
     cd "${SRC_DIR}"
-    # 初始密码: 数据库未设密码或 requireLogin=false 时, 用 INITIAL_PASSWORD 兜底,
-    # 避免远程访问用默认密码被 "Default password must be changed before remote access" 拦截。
-    # 首次登录后建议在 Web UI 修改为自定义密码。
+    # 初始密码: 数据库未设密码或 requireLogin=false 时用 INITIAL_PASSWORD 兜底。
+    # 首次登录后建议在 Web UI 修改为自定义密码。API 调用另受 API Key 保护。
     INITIAL_PASSWORD="${INITIAL_PASSWORD:-123456}"
     DATA_DIR="${DATA_DIR}" PORT="${PORT}" HOSTNAME="${HOSTNAME}" \
-        INITIAL_PASSWORD="${INITIAL_PASSWORD}" \
+        INITIAL_PASSWORD="${INITIAL_PASSWORD}" JWT_SECRET="${JWT_SECRET:-}" \
         nohup "${NODE_BIN}" --max-old-space-size=4096 custom-server.js >> "${LOG}" 2>&1 &
     echo $! > "${PID_FILE}"
-    # 等待服务就绪（最多 60s）
-    for i in $(seq 1 60); do
-        if curl -sf "http://127.0.0.1:${PORT}/api/health" >/dev/null 2>&1; then
-            echo "started (pid $(cat "${PID_FILE}"))"
-            return 0
+
+    # 等待服务就绪（最多 60s）。curl 不可用时降级为检查进程存活。
+    if command -v curl >/dev/null 2>&1; then
+        for _ in $(seq 1 60); do
+            if curl -sf "http://127.0.0.1:${PORT}/api/health" >/dev/null 2>&1; then
+                echo "started (pid $(cat "${PID_FILE}"))"
+                return 0
+            fi
+            sleep 1
+        done
+        echo "WARN: 健康检查 60s 超时，进程已拉起但 /api/health 未响应，请查看 ${LOG}"
+    else
+        sleep 2
+        if kill -0 "$(cat "${PID_FILE}")" 2>/dev/null; then
+            echo "started (pid $(cat "${PID_FILE}")) (no curl: skipped health check)"
+        else
+            echo "ERROR: 进程启动后立即退出，请查看 ${LOG}" >&2
+            return 1
         fi
-        sleep 1
-    done
-    echo "started, but health check timed out (check ${LOG})"
+    fi
     return 0
 }
 
 stop() {
+    local pid=""
     if [ -f "${PID_FILE}" ]; then
-        kill "$(cat "${PID_FILE}")" 2>/dev/null || true
+        pid="$(cat "${PID_FILE}" 2>/dev/null || true)"
+        kill "${pid}" 2>/dev/null || true
+        # 等待优雅退出，最多 10s，超时升级 SIGKILL
+        for _ in $(seq 1 10); do
+            kill -0 "${pid}" 2>/dev/null || break
+            sleep 1
+        done
+        if kill -0 "${pid}" 2>/dev/null; then
+            kill -9 "${pid}" 2>/dev/null || true
+        fi
         rm -f "${PID_FILE}"
     fi
-    # 兜底：杀掉残留的 next-server 进程（仅限本应用目录）
-    pkill -f "${SRC_DIR}/custom-server.js" 2>/dev/null || true
+    # 兜底：遍历 /proc，只杀命令行含 custom-server.js 且工作目录/环境属于本应用数据目录的进程，
+    # 避免 pkill -f 误伤同名其他应用。
+    local p="" cwd=""
+    for p in /proc/[0-9]*; do
+        cwd="$(readlink -f "${p}/cwd" 2>/dev/null || true)"
+        if [ "${cwd}" = "${SRC_DIR}" ] \
+            && tr '\0' ' ' < "${p}/cmdline" 2>/dev/null | grep -q 'custom-server\.js'; then
+            kill "${p#/proc/}" 2>/dev/null || true
+        fi
+    done
     echo "stopped"
 }
 
 status() {
-    if [ -f "${PID_FILE}" ] && kill -0 "$(cat "${PID_FILE}")" 2>/dev/null; then
+    if [ -f "${PID_FILE}" ] && pid_is_ours "$(cat "${PID_FILE}" 2>/dev/null || true)"; then
         echo "running"
         return 0
     fi

@@ -1,4 +1,7 @@
 * text=auto
 *.sh text eol=lf
+# fnOS 胶水脚本无扩展名，需强制 LF（否则 Windows 工作区可能带上 CRLF，NAS 上 #!/bin/bash\r 会报错）
+cmd/* text eol=lf
+wizard/* text eol=lf
 *.png binary
 *.fpk binary

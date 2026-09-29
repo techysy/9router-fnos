@@ -39,11 +39,20 @@ pid_is_ours() {
         && tr '\0' ' ' < "/proc/${p}/cmdline" | grep -qE 'custom-server\.js|next-server'
 }
 
-# ensure_env — 首次生成 .env（随机 JWT_SECRET），并 source 进去作为唯一事实来源
+# ensure_env — 首次生成 .env（初始密码），并 source 进去作为唯一事实来源。
+# JWT_SECRET 不走 .env：上游自己管理 DATA_DIR/jwt-secret 文件（进程启动时
+# 若未设 JWT_SECRET 环境变量，会自动读写该文件），不要干扰它的机制。
 ensure_env() {
     if [ ! -f "${ENV_FILE}" ]; then
-        local jwt
-        # 优先 openssl，其次 /dev/urandom，最后退回时间+pid（兜底，不推荐）
+        cat > "${ENV_FILE}" <<'EOF'
+INITIAL_PASSWORD=123456
+EOF
+        chmod 600 "${ENV_FILE}" 2>/dev/null || true
+        echo "created ${ENV_FILE}"
+    fi
+    # 确保 jwt-secret 文件存在（上游首次运行会自动生成，这里兜底）
+    if [ ! -f "${DATA_DIR}/jwt-secret" ] || [ ! -s "${DATA_DIR}/jwt-secret" ]; then
+        local jwt=""
         if command -v openssl >/dev/null 2>&1; then
             jwt="$(openssl rand -hex 32)"
         elif [ -r /dev/urandom ]; then
@@ -51,12 +60,9 @@ ensure_env() {
         else
             jwt="$(date +%s)-$$"
         fi
-        cat > "${ENV_FILE}" <<EOF
-INITIAL_PASSWORD=123456
-JWT_SECRET=${jwt}
-EOF
-        chmod 600 "${ENV_FILE}" 2>/dev/null || true
-        echo "created ${ENV_FILE} (random JWT_SECRET)"
+        printf '%s' "${jwt}" > "${DATA_DIR}/jwt-secret"
+        chmod 600 "${DATA_DIR}/jwt-secret" 2>/dev/null || true
+        echo "created ${DATA_DIR}/jwt-secret"
     fi
     # .env 是唯一事实来源，覆盖环境里可能存在的旧值
     set -a
@@ -83,7 +89,7 @@ start() {
     # 首次登录后建议在 Web UI 修改为自定义密码。API 调用另受 API Key 保护。
     INITIAL_PASSWORD="${INITIAL_PASSWORD:-123456}"
     DATA_DIR="${DATA_DIR}" PORT="${PORT}" HOSTNAME="${HOSTNAME}" \
-        INITIAL_PASSWORD="${INITIAL_PASSWORD}" JWT_SECRET="${JWT_SECRET:-}" \
+        INITIAL_PASSWORD="${INITIAL_PASSWORD}" \
         nohup "${NODE_BIN}" --max-old-space-size=4096 custom-server.js >> "${LOG}" 2>&1 &
     echo $! > "${PID_FILE}"
 

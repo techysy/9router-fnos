@@ -76,7 +76,10 @@
 # 仅当 SRC_DIR 缺 node_modules、且另一布局的 target/server 有、且两者不是同一目录时执行
 # （同一目录时 ln -s 会创建自引用链接）。
 9router_link_node_modules() {
-    local src_dir="$1" app_dir="$2" log="$3" target_nm="${app_dir}/target/server/node_modules"
+    # 注意拆开两行：同一条 local 语句里引用本行刚声明的变量，在 set -u 下
+    # 会抛 "app_dir: unbound variable"（声明参数先于赋值展开），曾致 10238 安装失败
+    local src_dir="$1" app_dir="$2" log="$3"
+    local target_nm="${app_dir}/target/server/node_modules"
     if [ "${src_dir}" = "${app_dir}/target/server" ]; then
         return 0
     fi

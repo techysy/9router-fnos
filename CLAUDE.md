@@ -58,7 +58,7 @@ ARCH 参数仅接受留空 / `x86` / `all`（ARM 用 `all` 变体），其他值
 | 初始登录密码 | `123456`，`cmd/main` 首次启动写入 `${DATA_DIR}/.env`（持久目录，不会被升级覆盖）；`JWT_SECRET` 首次生成随机值 |
 | 部署布局 | 兼容两种：`${APP_DIR}/server` 与 `${APP_DIR}/target/server` |
 
-已知坑（都有对应修复，别回退）：启动前清理 `data.sqlite-shm/wal` 残留（node:sqlite "unable to open database file"）；移动 App WebView iframe 存不住登录 cookie，完整体验用浏览器直连；`cmd/*` 是无扩展名 bash，`.gitattributes` 已强制 LF（CRLF 会导致 NAS 上 `#!/bin/bash\r` 报错）；在线构建的失败必须非零退出，否则 App Center 会「安装成功」但点开空白页。
+已知坑（都有对应修复，别回退）：启动前清理 `data.sqlite-shm/wal` 残留（node:sqlite "unable to open database file"）；移动 App WebView iframe 存不住登录 cookie，完整体验用浏览器直连；`cmd/*` 是无扩展名 bash，`.gitattributes` 已强制 LF（CRLF 会导致 NAS 上 `#!/bin/bash\r` 报错）；在线构建的失败必须非零退出，否则 App Center 会「安装成功」但点开空白页；同一条 `local` 声明里不得引用本行刚声明的变量（`set -u` 下先展开后赋值，报 unbound variable，曾致 x86 离线包 10238 安装回滚）。
 
 ## 约定
 

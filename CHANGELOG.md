@@ -2,6 +2,14 @@
 
 ---
 
+## 热修复：x86 离线包安装/升级失败（2026-10-01）
+
+### 修复 / Fixed
+- **`cmd/lib.sh` 同行 `local` 自引用**：`9router_link_node_modules` 里 `local src_dir=... app_dir=... target_nm="${app_dir}/..."` 在 `set -u` 下展开顺序是「先展开后赋值」，抛 `app_dir: unbound variable`，`install_callback` / `upgrade_callback` 非零退出，fnOS 报 **10238（ErrCodeInstallCallbackException）** 并整体回滚。仅影响 x86 离线变体（走「已有构建产物」早退路径必经该函数）；`all` 在线构建变体不经过，不受影响。已拆成两条 `local` 声明，并在 `bash -u` 下对 lib.sh 全函数 + install_callback 完整早退路径做了冒烟验证
+- 影响范围：自 c3fde94（lib.sh 抽取，2026-09-29）起的所有 CI 打包 Release（v0.5.95 等），与上游版本号无关；v0.5.91（lib.sh 之前打包）正常
+
+---
+
 ## 文档与仓库卫生（2026-09-29）
 
 ### 新增 / Added
